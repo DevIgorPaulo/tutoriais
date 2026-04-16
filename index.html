@@ -1,693 +1,961 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Git: do Básico ao Avançado</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0d0f14;
-    --surface: #141720;
-    --surface2: #1a1f2e;
-    --border: #252b3b;
-    --accent: #f7c948;
-    --accent2: #4ade80;
-    --accent3: #60a5fa;
-    --accent4: #f472b6;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --code-bg: #0a0c10;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutoriais — Dev Hub</title>
+  <meta name="description" content="Hub de tutoriais de programação — Git, Python, Docker, JavaScript e muito mais.">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e0f0f;
+      --surface: #161818;
+      --surface2: #1d1f1f;
+      --border: #252828;
+      --text: #e2e0dd;
+      --muted: #5a5856;
+      --code-bg: #0a0b0b;
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+      /* tool colors */
+      --git: #F05032;
+      --git2: #FF8C6B;
+      --python: #FFD343;
+      --python2: #3776AB;
+      --js: #F7DF1E;
+      --js2: #323330;
+      --docker: #2496ED;
+      --docker2: #1A7AC7;
+      --rust: #CE4A00;
+      --rust2: #E05A24;
+      --linux: #FFA500;
+      --linux2: #E69500;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Sora', sans-serif;
-    font-size: 15px;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* ── GRID NOISE BACKGROUND ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(247,201,72,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(247,201,72,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
 
-  .wrapper {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 0 24px 80px;
-    position: relative;
-    z-index: 1;
-  }
+    /* animated dot grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* ── HERO ── */
-  .hero {
-    padding: 72px 0 56px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
+    /* top rainbow bar */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+          var(--git) 0%,
+          var(--python) 25%,
+          var(--docker) 50%,
+          var(--js) 75%,
+          var(--rust) 100%);
+      z-index: 100;
+    }
 
-  .hero-tag {
-    display: inline-block;
-    background: var(--accent);
-    color: #0d0f14;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 2px;
-    margin-bottom: 24px;
-  }
+    .wrapper {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+      position: relative;
+      z-index: 1;
+    }
 
-  .hero h1 {
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
+    /* ══ HERO ══ */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      animation: fadeUp .5s ease forwards;
+      position: relative;
+    }
 
-  .hero h1 span {
-    color: var(--accent);
-  }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 3px;
+      margin-bottom: 28px;
+    }
 
-  .hero p {
-    color: var(--muted);
-    font-size: 16px;
-    max-width: 520px;
-    font-weight: 300;
-  }
+    .hero-eyebrow .pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--python);
+      animation: blink 2s ease-in-out infinite;
+    }
 
-  .hero-badge-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 28px;
-  }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
 
-  .badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 100px;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--python) 0%, var(--git) 40%, var(--docker) 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-  /* ── TOC ── */
-  .toc {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 4px;
-    padding: 28px 32px;
-    margin: 48px 0;
-  }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 300;
+      max-width: 460px;
+      margin: 0 auto 36px;
+    }
 
-  .toc h2 {
-    font-size: 12px;
-    font-family: 'Space Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    margin-bottom: 18px;
-  }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
 
-  .toc ol {
-    list-style: none;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 32px;
-  }
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
 
-  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+    .hero-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
 
-  .toc ol li a {
-    color: var(--text);
-    text-decoration: none;
-    font-size: 13.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color .2s;
-  }
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
 
-  .toc ol li a:hover { color: var(--accent); }
+    /* ══ SEARCH BAR ══ */
+    .search-wrap {
+      margin: 48px 0 0;
+      animation: fadeUp .5s .1s ease both;
+    }
 
-  .toc-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    min-width: 22px;
-  }
+    .search-box {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 18px 12px 44px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a5856' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 14px center;
+    }
 
-  /* ── SECTION ── */
-  .section {
-    margin-top: 64px;
-    scroll-margin-top: 24px;
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity .5s ease, transform .5s ease;
-  }
+    .search-box::placeholder {
+      color: var(--muted);
+    }
 
-  .section.visible {
-    opacity: 1;
-    transform: none;
-  }
+    .search-box:focus {
+      border-color: rgba(255, 211, 67, 0.35);
+      box-shadow: 0 0 0 3px rgba(255, 211, 67, 0.06);
+    }
 
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 28px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
+    /* ══ CATEGORY SECTIONS ══ */
+    .category {
+      margin-top: 68px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
 
-  .section-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--accent);
-    background: rgba(247,201,72,.08);
-    border: 1px solid rgba(247,201,72,.2);
-    padding: 3px 9px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
+    .category.visible {
+      opacity: 1;
+      transform: none;
+    }
 
-  .section h2 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
 
-  /* ── CODE BLOCKS ── */
-  .code-wrap {
-    position: relative;
-    margin: 20px 0;
-  }
+    .category-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
 
-  .code-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+    .category-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
 
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 20px 22px;
-    overflow-x: auto;
-    position: relative;
-  }
+    .category-count {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
 
-  pre:hover .copy-btn { opacity: 1; }
+    /* ══ TOOL ROW ══ */
+    .tool-row {
+      margin-bottom: 32px;
+    }
 
-  code {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    line-height: 1.75;
-    color: #c9d1d9;
-  }
+    .tool-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
 
-  /* syntax highlight */
-  .cm  { color: var(--muted); font-style: italic; } /* comment */
-  .kw  { color: var(--accent3); }  /* keyword/cmd */
-  .fl  { color: var(--accent); }   /* flag */
-  .st  { color: var(--accent2); }  /* string */
-  .op  { color: var(--accent4); }  /* operator/output */
+    .tool-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 3px 11px;
+      border-radius: 3px;
+      /* color & bg set inline via style attr */
+    }
 
-  /* inline code */
-  p code, li code {
-    background: rgba(255,255,255,.06);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 1px 6px;
-    font-size: 12.5px;
-    color: var(--accent);
-  }
+    .tool-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
 
-  .copy-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity .2s, color .2s;
-  }
+    /* ══ TUTORIAL CARDS GRID ══ */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
 
-  .copy-btn:hover { color: var(--accent); }
-  .copy-btn.copied { color: var(--accent2); opacity: 1; }
+    /* ══ TUTORIAL CARD ══ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      cursor: pointer;
+    }
 
-  /* ── CALLOUTS ── */
-  .tip, .warn {
-    display: flex;
-    gap: 12px;
-    border-radius: 4px;
-    padding: 16px 18px;
-    margin: 20px 0;
-    font-size: 14px;
-  }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity .2s;
+      /* gradient set via inline style */
+    }
 
-  .tip {
-    background: rgba(74,222,128,.05);
-    border: 1px solid rgba(74,222,128,.2);
-    border-left: 3px solid var(--accent2);
-  }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
 
-  .warn {
-    background: rgba(251,113,133,.05);
-    border: 1px solid rgba(251,113,133,.2);
-    border-left: 3px solid #fb7185;
-  }
+    .card:hover::before {
+      opacity: 1;
+    }
 
-  .tip-icon, .warn-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    /* glow on hover — set via JS */
+    .card.soon {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
 
-  /* ── COMMAND CARDS ── */
-  .cmd-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
-    margin: 20px 0;
-  }
+    .card-emoji {
+      font-size: 28px;
+      line-height: 1;
+    }
 
-  .cmd-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    transition: border-color .2s;
-  }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
 
-  .cmd-card:hover { border-color: var(--accent); }
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+      flex: 1;
+    }
 
-  .cmd-card code {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--accent3);
-    font-size: 12px;
-  }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
 
-  .cmd-card p {
-    font-size: 12.5px;
-    color: var(--muted);
-    margin: 0;
-  }
+    .card-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
 
-  /* ── PROSE ── */
-  p { margin-bottom: 14px; }
-  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
-  li { margin-bottom: 6px; font-size: 14.5px; }
-  li strong { color: var(--accent3); font-weight: 600; }
+    .card-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
 
-  /* ── DIVIDER ── */
-  .divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
-    margin: 56px 0;
-  }
+    .card-arrow {
+      font-size: 16px;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity .2s, transform .2s;
+      /* color set inline */
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    margin-top: 72px;
-    padding-top: 28px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+    .card:hover .card-arrow {
+      opacity: 1;
+      transform: none;
+    }
 
-  footer span { color: var(--accent); }
+    .soon-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 2px;
+      background: rgba(90, 88, 86, 0.2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
 
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: none; }
-  }
+    /* ══ EMPTY STATE ══ */
+    .no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-  .hero { animation: fadeUp .6s ease forwards; }
-  .toc  { animation: fadeUp .6s .1s ease both; }
-</style>
+    .no-results .icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    /* ══ FOOTER ══ */
+    footer {
+      margin-top: 80px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-left span {
+      color: var(--python);
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .v-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--python);
+      opacity: 0.6;
+      animation: blink 3s ease-in-out infinite;
+    }
+
+    /* ══ ANIMATIONS ══ */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 0.6;
+      }
+
+      50% {
+        opacity: 0.15;
+      }
+    }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 600px) {
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .hero-stats {
+        gap: 24px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ══ HIDE CARD DURING SEARCH ══ */
+    .card[data-hidden="true"] {
+      display: none;
+    }
+
+    .tool-row[data-hidden="true"] {
+      display: none;
+    }
+
+    .category[data-hidden="true"] {
+      display: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrapper">
+  <div class="wrapper">
 
-  <!-- HERO -->
-  <header class="hero">
-    <div class="hero-tag">🌱 Tutorial Completo</div>
-    <h1>Git do <span>Básico</span><br>ao Avançado</h1>
-    <p>Aprenda Git no terminal com exemplos práticos, do primeiro commit até rebase interativo.</p>
-    <div class="hero-badge-row">
-      <span class="badge">Configuração</span>
-      <span class="badge">Branches</span>
-      <span class="badge">Stash</span>
-      <span class="badge">Rebase</span>
-      <span class="badge">Cherry-pick</span>
-      <span class="badge">Boas Práticas</span>
-    </div>
-  </header>
-
-  <!-- TOC -->
-  <nav class="toc">
-    <h2>// Índice</h2>
-    <ol>
-      <li><a href="#s1"><span class="toc-num">01</span> Configuração Inicial</a></li>
-      <li><a href="#s2"><span class="toc-num">02</span> Criando Repositórios</a></li>
-      <li><a href="#s3"><span class="toc-num">03</span> Ciclo Básico de Trabalho</a></li>
-      <li><a href="#s4"><span class="toc-num">04</span> Branches</a></li>
-      <li><a href="#s5"><span class="toc-num">05</span> Histórico e Revisão</a></li>
-      <li><a href="#s6"><span class="toc-num">06</span> Reescrevendo Histórico</a></li>
-      <li><a href="#s7"><span class="toc-num">07</span> Cherry-pick</a></li>
-      <li><a href="#s8"><span class="toc-num">08</span> Stash</a></li>
-      <li><a href="#s9"><span class="toc-num">09</span> Git Remoto</a></li>
-      <li><a href="#s10"><span class="toc-num">10</span> Dicas Avançadas</a></li>
-    </ol>
-  </nav>
-
-  <!-- SECTION 1 -->
-  <section class="section" id="s1">
-    <div class="section-header">
-      <span class="section-num">01</span>
-      <h2>Configuração Inicial</h2>
-    </div>
-    <p>Antes de usar o Git, configure seu nome e e-mail. Essas informações aparecerão em cada commit que você fizer.</p>
-    <div class="code-wrap">
-      <div class="code-label">terminal</div>
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Configurar nome do usuário</span>
-<span class="kw">git config</span> <span class="fl">--global</span> user.name <span class="st">"Seu Nome"</span>
-
-<span class="cm"># Configurar email</span>
-<span class="kw">git config</span> <span class="fl">--global</span> user.email <span class="st">"seu.email@exemplo.com"</span>
-
-<span class="cm"># Verificar configuração</span>
-<span class="kw">git config</span> <span class="fl">--list</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div><code>--global</code> faz a configuração valer para <strong>todos os projetos</strong> no seu computador. Para um projeto específico, tire o <code>--global</code>.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 2 -->
-  <section class="section" id="s2">
-    <div class="section-header">
-      <span class="section-num">02</span>
-      <h2>Criando e Inicializando Repositórios</h2>
-    </div>
-    <p><strong>Criar um repositório local:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">mkdir</span> meu-projeto
-<span class="kw">cd</span> meu-projeto
-<span class="kw">git init</span></code></pre>
-    </div>
-    <div class="code-wrap">
-      <div class="code-label">saída</div>
-      <pre><code><span class="op">Initialized empty Git repository in /caminho/meu-projeto/.git/</span></code></pre>
-    </div>
-    <p><strong>Clonar um repositório existente:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git clone</span> <span class="st">https://github.com/usuario/repositorio.git</span></code></pre>
-    </div>
-    <p>Isso cria uma pasta com todos os arquivos do repositório remoto, incluindo o histórico completo de commits.</p>
-  </section>
-
-  <!-- SECTION 3 -->
-  <section class="section" id="s3">
-    <div class="section-header">
-      <span class="section-num">03</span>
-      <h2>Ciclo Básico de Trabalho</h2>
-    </div>
-    <p>O fluxo do dia a dia com Git segue 4 passos fundamentais:</p>
-
-    <p><strong>Passo 1 — Verificar status</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git status</span></code></pre>
-    </div>
-    <p>Mostra arquivos modificados, não adicionados ou prontos para commit.</p>
-
-    <p><strong>Passo 2 — Adicionar mudanças</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git add</span> arquivo.txt       <span class="cm"># Adiciona um arquivo específico</span>
-<span class="kw">git add</span> .                 <span class="cm"># Adiciona todas as mudanças</span></code></pre>
-    </div>
-
-    <p><strong>Passo 3 — Criar um commit</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git commit</span> <span class="fl">-m</span> <span class="st">"Mensagem explicando a mudança"</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div>Use mensagens curtas e claras. Ex.: <code>"Corrige bug no login"</code></div>
-    </div>
-
-    <p><strong>Passo 4 — Enviar para o remoto</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git push</span> origin main</code></pre>
-    </div>
-    <ul>
-      <li><code>origin</code> — nome do repositório remoto</li>
-      <li><code>main</code> — branch principal (ou <code>master</code> em alguns casos)</li>
-    </ul>
-  </section>
-
-  <!-- SECTION 4 -->
-  <section class="section" id="s4">
-    <div class="section-header">
-      <span class="section-num">04</span>
-      <h2>Branches (Ramificações)</h2>
-    </div>
-    <p>Branches permitem desenvolver funcionalidades isoladas sem afetar o código principal.</p>
-
-    <div class="cmd-grid">
-      <div class="cmd-card">
-        <code>git checkout -b minha-branch</code>
-        <p>Cria e troca para uma nova branch</p>
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-eyebrow">
+        <span class="pulse"></span>
+        Dev Tutoriais Hub
       </div>
-      <div class="cmd-card">
-        <code>git checkout main</code>
-        <p>Troca para a branch main</p>
+      <h1>Aprenda<br><span class="gradient-text">sem enrolação</span></h1>
+      <p class="hero-sub">Tutoriais diretos ao ponto — código real, exemplos reais, sem blá-blá-blá.</p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val" id="stat-total">10</span>
+          <span class="hero-stat-label">Tutoriais</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">2</span>
+          <span class="hero-stat-label">Ferramentas</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">PT-BR</span>
+          <span class="hero-stat-label">Idioma</span>
+        </div>
       </div>
-      <div class="cmd-card">
-        <code>git branch</code>
-        <p>Lista branches locais</p>
+    </header>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <input class="search-box" type="text" id="search" placeholder="Buscar tutorial… (ex: loops, git, branch)"
+        autocomplete="off">
+    </div>
+
+    <!-- LINGUAGENS -->
+    <section class="category" id="cat-linguagens">
+      <div class="category-header">
+        <span class="category-icon">💻</span>
+        <h2 class="category-title">Linguagens de Programação</h2>
+        <span class="category-count" id="count-linguagens">3 tutoriais</span>
       </div>
-      <div class="cmd-card">
-        <code>git branch -a</code>
-        <p>Lista todas, inclusive remotas</p>
+
+      <!-- Python -->
+      <div class="tool-row" data-tool="python">
+        <div class="tool-label">
+          <span class="tool-badge"
+            style="color:#FFD343;background:rgba(255,211,67,0.08);border:1px solid rgba(255,211,67,0.25);">🐍
+            Python</span>
+          <span class="tool-line"></span>
+        </div>
+        <div class="cards-grid">
+
+          <a class="card" href="python/loops.html"
+            data-search="python loops for while range enumerate comprehension laço repetição"
+            style="--c1:#FFD343;--c2:#3776AB" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🔁</div>
+            <div class="card-title">Loops em Python</div>
+            <div class="card-desc">for, while, break, continue, enumerate, zip e list comprehension com exemplos
+              práticos.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">for</span>
+                <span class="card-tag">while</span>
+                <span class="card-tag">comprehension</span>
+              </div>
+              <span class="card-arrow" style="color:#FFD343">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="python/funcoes.html"
+            data-search="python funções def return lambda argumentos args kwargs closures decorators escopo recursão"
+            style="--c1:#FFD343;--c2:#3776AB" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🧩</div>
+            <div class="card-title">Funções em Python</div>
+            <div class="card-desc">def, return, *args, **kwargs, lambda, closures e decorators com exemplos práticos.
+            </div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">def</span>
+                <span class="card-tag">lambda</span>
+                <span class="card-tag">decorators</span>
+              </div>
+              <span class="card-arrow" style="color:#FFD343">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="python/colecoes.html" data-search="python listas dicionários sets tuplas coleções"
+            style="--c1:#FFD343;--c2:#3776AB" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">📦</div>
+            <div class="card-title">Coleções em Python</div>
+            <div class="card-desc">list, dict, set, tuple — quando usar cada uma e como manipular.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">list</span>
+                <span class="card-tag">dict</span>
+                <span class="card-tag">set</span>
+                <span class="card-tag">tuple</span>
+              </div>
+              <span class="card-arrow" style="color:#FFD343">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="python/poo.html"
+            data-search="python orientação objetos poo classes herança encapsulamento polimorfismo composição self init dunder property"
+            style="--c1:#FFD343;--c2:#3776AB" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🏗️</div>
+            <div class="card-title">POO em Python</div>
+            <div class="card-desc">Classes, herança, polimorfismo, encapsulamento, composição e dunder methods na
+              prática.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">classes</span>
+                <span class="card-tag">herança</span>
+                <span class="card-tag">@property</span>
+              </div>
+              <span class="card-arrow" style="color:#FFD343">→</span>
+            </div>
+          </a>
+
+        </div>
       </div>
+
+      <!-- JavaScript -->
+      <div class="tool-row" data-tool="javascript">
+        <div class="tool-label">
+          <span class="tool-badge"
+            style="color:#F7DF1E;background:rgba(247,223,30,0.08);border:1px solid rgba(247,223,30,0.2);">⚡
+            JavaScript</span>
+          <span class="tool-line"></span>
+        </div>
+        <div class="cards-grid">
+
+          <a class="card" href="js/loops.html"
+            data-search="javascript js loops for while foreach map filter reduce array do-while for-of for-in"
+            style="--c1:#F7DF1E;--c2:#323330" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🔁</div>
+            <div class="card-title">Loops em JavaScript</div>
+            <div class="card-desc">for, while, for...of, for...in, forEach, map, filter, reduce — o jeito certo de iterar em JS.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">for</span>
+                <span class="card-tag">for...of</span>
+                <span class="card-tag">map/filter</span>
+              </div>
+              <span class="card-arrow" style="color:#F7DF1E">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="js/promises.html"
+            data-search="javascript assíncrono async await promise fetch then catch allSettled race all"
+            style="--c1:#F7DF1E;--c2:#323330" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">⏳</div>
+            <div class="card-title">Promises & Async/Await</div>
+            <div class="card-desc">Promises, async/await, try/catch e Promise.all — código assíncrono sem dor de cabeça.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">async/await</span>
+                <span class="card-tag">Promise</span>
+                <span class="card-tag">fetch</span>
+              </div>
+              <span class="card-arrow" style="color:#F7DF1E">→</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Rust -->
+      <!-- <div class="tool-row" data-tool="rust">
+      <div class="tool-label">
+        <span class="tool-badge" style="color:#CE4A00;background:rgba(206,74,0,0.08);border:1px solid rgba(206,74,0,0.25);">🦀 Rust</span>
+        <span class="tool-line"></span>
+      </div>
+      <div class="cards-grid">
+
+        <a class="card soon"
+           href="#"
+           data-search="rust ownership borrow checker memória compilador"
+           style="--c1:#CE4A00;--c2:#E05A24">
+          <div class="card-emoji">🔐</div>
+          <div class="card-title">Ownership em Rust</div>
+          <div class="card-desc">O conceito mais importante de Rust: ownership, borrowing e lifetimes explicados sem mistério.</div>
+          <div class="card-footer">
+            <span class="soon-badge">em breve</span>
+          </div>
+        </a>
+
+      </div>
+    </div> -->
+
+    </section>
+
+    <!-- FERRAMENTAS -->
+    <section class="category" id="cat-ferramentas">
+      <div class="category-header">
+        <span class="category-icon">🔧</span>
+        <h2 class="category-title">Ferramentas de Desenvolvimento</h2>
+        <span class="category-count" id="count-ferramentas">1 tutorial</span>
+      </div>
+
+      <!-- Git -->
+      <div class="tool-row" data-tool="git">
+        <div class="tool-label">
+          <span class="tool-badge"
+            style="color:#F05032;background:rgba(240,80,50,0.08);border:1px solid rgba(240,80,50,0.25);">🌿 Git</span>
+          <span class="tool-line"></span>
+        </div>
+        <div class="cards-grid">
+
+          <a class="card" href="git/index.html"
+            data-search="git commit branch merge rebase stash cherry-pick controle versão"
+            style="--c1:#F05032;--c2:#FF8C6B" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🌿</div>
+            <div class="card-title">Git do Básico ao Avançado</div>
+            <div class="card-desc">Configuração, commits, branches, rebase interativo, stash, cherry-pick e boas
+              práticas.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">commit</span>
+                <span class="card-tag">branch</span>
+                <span class="card-tag">rebase</span>
+              </div>
+              <span class="card-arrow" style="color:#F05032">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="git/actions.html"
+            data-search="git github actions ci cd workflow deploy automação pipeline jobs steps secrets matrix cache"
+            style="--c1:#F05032;--c2:#FF8C6B" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🤖</div>
+            <div class="card-title">GitHub Actions</div>
+            <div class="card-desc">CI/CD com GitHub Actions — workflows automatizados do zero ao pipeline de build, test e deploy.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">workflow</span>
+                <span class="card-tag">CI/CD</span>
+                <span class="card-tag">secrets</span>
+              </div>
+              <span class="card-arrow" style="color:#F05032">→</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Docker -->
+      <div class="tool-row" data-tool="docker">
+        <div class="tool-label">
+          <span class="tool-badge"
+            style="color:#2496ED;background:rgba(36,150,237,0.08);border:1px solid rgba(36,150,237,0.25);">🐳
+            Docker</span>
+          <span class="tool-line"></span>
+        </div>
+        <div class="cards-grid">
+
+          <a class="card" href="docker/index.html"
+            data-search="docker container imagem dockerfile compose build run volume network multi-stage"
+            style="--c1:#2496ED;--c2:#1A7AC7" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🐳</div>
+            <div class="card-title">Docker Essencial</div>
+            <div class="card-desc">Containers, imagens, Dockerfile, volumes e docker-compose do básico ao avançado.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">dockerfile</span>
+                <span class="card-tag">compose</span>
+                <span class="card-tag">volumes</span>
+              </div>
+              <span class="card-arrow" style="color:#2496ED">→</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Linux -->
+      <div class="tool-row" data-tool="linux">
+        <div class="tool-label">
+          <span class="tool-badge"
+            style="color:#FFA500;background:rgba(255,165,0,0.08);border:1px solid rgba(255,165,0,0.25);">🐧 Linux</span>
+          <span class="tool-line"></span>
+        </div>
+        <div class="cards-grid">
+
+          <a class="card" href="linux/index.html"
+            data-search="linux terminal bash comandos shell script grep sed awk pipes find chmod ssh crontab"
+            style="--c1:#FFA500;--c2:#E69500" onmouseenter="hoverCard(this)" onmouseleave="leaveCard(this)">
+            <div class="card-emoji">🐧</div>
+            <div class="card-title">Terminal Linux</div>
+            <div class="card-desc">Comandos essenciais, grep, pipes, permissões, scripts bash, SSH e automação para o dia a dia.</div>
+            <div class="card-footer">
+              <div class="card-tags">
+                <span class="card-tag">bash</span>
+                <span class="card-tag">grep / pipes</span>
+                <span class="card-tag">SSH</span>
+              </div>
+              <span class="card-arrow" style="color:#FFA500">→</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- NO RESULTS -->
+    <div class="no-results" id="no-results">
+      <div class="icon">🔍</div>
+      <p>Nenhum tutorial encontrado para "<span id="search-term"></span>"</p>
     </div>
 
-    <p><strong>Merge — unir branches:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git checkout</span> main
-<span class="kw">git merge</span> minha-branch</code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div>Se houver conflitos, o Git vai sinalizar e você deve resolvê-los manualmente antes de continuar.</div>
-    </div>
-  </section>
+    <footer>
+      <div class="footer-left">
+        <span>dev</span> tutoriais &nbsp;·&nbsp; open source
+      </div>
+      <div class="footer-right">
+        <span class="v-dot"></span>
+        feito com 🐍 &amp; 🌿
+      </div>
+    </footer>
 
-  <!-- SECTION 5 -->
-  <section class="section" id="s5">
-    <div class="section-header">
-      <span class="section-num">05</span>
-      <h2>Histórico e Revisão</h2>
-    </div>
+  </div>
 
-    <p><strong>Ver commits:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git log</span>
-<span class="kw">git log</span> <span class="fl">--oneline</span>               <span class="cm"># versão resumida</span>
-<span class="kw">git log</span> <span class="fl">--graph --oneline --all</span>  <span class="cm"># visual bonito do histórico</span></code></pre>
-    </div>
+  <script>
+    /* ── Intersection Observer: fade-in sections ── */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.category').forEach(s => observer.observe(s));
 
-    <p><strong>Ver mudanças:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git diff</span>                <span class="cm"># alterações não adicionadas</span>
-<span class="kw">git diff</span> <span class="fl">--staged</span>       <span class="cm"># alterações prontas para commit</span></code></pre>
-    </div>
+    /* ── Card hover glow ── */
+    function hoverCard(card) {
+      const c1 = getComputedStyle(card).getPropertyValue('--c1').trim();
+      card.style.borderColor = c1 + '44';
+      card.style.boxShadow = `0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px ${c1}22`;
+      card.querySelector('.card-arrow').style.opacity = '1';
+      card.querySelector('.card-arrow').style.transform = 'none';
+      const bar = card.querySelector('::before');
+      card.style.setProperty('--bar-bg', `linear-gradient(90deg, ${c1}, var(--c2, ${c1}))`);
+    }
 
-    <p><strong>Blame — quem alterou cada linha:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git blame</span> arquivo.txt</code></pre>
-    </div>
-  </section>
+    function leaveCard(card) {
+      card.style.borderColor = '';
+      card.style.boxShadow = '';
+    }
 
-  <!-- SECTION 6 -->
-  <section class="section" id="s6">
-    <div class="section-header">
-      <span class="section-num">06</span>
-      <h2>Reescrevendo Histórico</h2>
-    </div>
+    /* set ::before gradient via class trick */
+    document.querySelectorAll('.card:not(.soon)').forEach(card => {
+      const c1 = getComputedStyle(card).getPropertyValue('--c1').trim();
+      const c2 = getComputedStyle(card).getPropertyValue('--c2').trim();
+      const pseudo = document.createElement('style');
+      pseudo.textContent = '';
+      // We'll handle via a real element overlay instead
+      const bar = document.createElement('div');
+      bar.style.cssText = `
+      position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,${c1},${c2});
+      opacity:0;transition:opacity .2s;pointer-events:none;
+      border-radius:8px 8px 0 0;
+    `;
+      bar.className = 'card-bar';
+      card.prepend(bar);
 
-    <p><strong>Rebase Interativo — juntar commits (squash):</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git rebase</span> <span class="fl">-i</span> HEAD~3</code></pre>
-    </div>
-    <ul>
-      <li>Escolha <code>pick</code> para manter ou <code>squash</code> para unir commits</li>
-      <li>Excelente para limpar histórico antes de enviar PR</li>
-    </ul>
-
-    <p><strong>Alterar último commit:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git commit</span> <span class="fl">--amend</span> <span class="fl">-m</span> <span class="st">"Nova mensagem do commit"</span></code></pre>
-    </div>
-
-    <p><strong>Reset — voltar commits:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git reset</span> <span class="fl">--soft</span> HEAD~1   <span class="cm"># mantém alterações no stage</span>
-<span class="kw">git reset</span> <span class="fl">--hard</span> HEAD~1   <span class="cm"># perde alterações completamente</span></code></pre>
-    </div>
-    <div class="warn">
-      <span class="warn-icon">⚠️</span>
-      <div><strong>Cuidado:</strong> <code>--hard</code> apaga mudanças permanentemente, sem chance de recuperar.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 7 -->
-  <section class="section" id="s7">
-    <div class="section-header">
-      <span class="section-num">07</span>
-      <h2>Cherry-pick</h2>
-    </div>
-    <p>Aplica commits específicos de outra branch, sem precisar fazer merge completo.</p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git checkout</span> main
-<span class="kw">git cherry-pick</span> abc123   <span class="cm"># aplica commit específico pelo hash</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div>Útil quando você quer pegar só partes de outra branch, sem trazer todas as mudanças.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 8 -->
-  <section class="section" id="s8">
-    <div class="section-header">
-      <span class="section-num">08</span>
-      <h2>Stash (Guardar Temporariamente)</h2>
-    </div>
-    <p>Guarda mudanças em progresso sem precisar criar um commit.</p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git stash</span>          <span class="cm"># guarda mudanças atuais</span>
-<span class="kw">git stash list</span>     <span class="cm"># lista stashes salvos</span>
-<span class="kw">git stash apply</span>    <span class="cm"># reaplica último stash (mantém na lista)</span>
-<span class="kw">git stash pop</span>      <span class="cm"># reaplica e remove do stash</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div>Ótimo quando precisa trocar de branch sem commitar o trabalho atual.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 9 -->
-  <section class="section" id="s9">
-    <div class="section-header">
-      <span class="section-num">09</span>
-      <h2>Git Remoto</h2>
-    </div>
-
-    <p><strong>Adicionar repositório remoto:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git remote add</span> origin <span class="st">https://github.com/usuario/repositorio.git</span></code></pre>
-    </div>
-
-    <p><strong>Atualizar branch local com o remoto:</strong></p>
-    <div class="code-wrap">
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git fetch</span> origin         <span class="cm"># busca dados do remoto sem aplicar</span>
-<span class="kw">git pull</span> origin main     <span class="cm"># busca e aplica no branch atual</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">💡</span>
-      <div><code>fetch</code> só baixa os dados. <code>pull</code> baixa e aplica automaticamente no seu branch.</div>
-    </div>
-  </section>
-
-  <!-- SECTION 10 -->
-  <section class="section" id="s10">
-    <div class="section-header">
-      <span class="section-num">10</span>
-      <h2>Dicas Avançadas e Boas Práticas</h2>
-    </div>
-    <ul>
-      <li><strong>Squash and Merge</strong> no GitHub para manter histórico limpo</li>
-      <li><strong>Blame</strong> para rastrear a origem de bugs</li>
-      <li>Use <strong>branches pequenas e frequentes</strong></li>
-      <li>Mensagens de commit no padrão: <code>tipo: descrição</code> — ex.: <code>fix: corrige bug no login</code></li>
-      <li>Sempre faça <strong>pull antes de push</strong> para evitar conflitos</li>
-    </ul>
-
-    <p><strong>Visualização em árvore do histórico:</strong></p>
-    <div class="code-wrap">
-      <div class="code-label">comando favorito</div>
-      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git log</span> <span class="fl">--graph --decorate --oneline --all</span></code></pre>
-    </div>
-    <div class="tip">
-      <span class="tip-icon">📊</span>
-      <div>Saída visual em formato de árvore — fácil de entender ramificações e merges.</div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <footer>
-    <div>git tutorial &nbsp;·&nbsp; <span>terminal guide</span></div>
-    <div>do básico ao avançado &nbsp;🌱</div>
-  </footer>
-
-</div>
-
-<script>
-  // Copy button
-  function copyCode(btn) {
-    const pre = btn.closest('pre');
-    const text = Array.from(pre.querySelectorAll('code > *')).map(el => el.textContent).join('') ||
-                 pre.querySelector('code').textContent;
-    navigator.clipboard.writeText(text.trim()).then(() => {
-      btn.textContent = 'copiado!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 1800);
+      card.addEventListener('mouseenter', () => bar.style.opacity = '1');
+      card.addEventListener('mouseleave', () => bar.style.opacity = '0');
     });
-  }
 
-  // Intersection observer for section fade-in
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.08 });
+    /* ── Search ── */
+    const searchInput = document.getElementById('search');
+    const noResults = document.getElementById('no-results');
+    const searchTermEl = document.getElementById('search-term');
 
-  document.querySelectorAll('.section').forEach(s => observer.observe(s));
-</script>
+    searchInput.addEventListener('input', () => {
+      const raw = searchInput.value.trim().toLowerCase();
+      const terms = raw.split(/\s+/).filter(Boolean);
+
+      if (!terms.length) {
+        // reset all
+        document.querySelectorAll('.card').forEach(c => c.removeAttribute('data-hidden'));
+        document.querySelectorAll('.tool-row').forEach(r => r.removeAttribute('data-hidden'));
+        document.querySelectorAll('.category').forEach(s => s.removeAttribute('data-hidden'));
+        noResults.style.display = 'none';
+        updateCounts();
+        return;
+      }
+
+      let anyVisible = false;
+
+      document.querySelectorAll('.tool-row').forEach(row => {
+        let rowHasVisible = false;
+
+        row.querySelectorAll('.card').forEach(card => {
+          const text = (card.dataset.search || '') + ' ' + (card.querySelector('.card-title')?.textContent || '');
+          const match = terms.every(t => text.toLowerCase().includes(t));
+          card.dataset.hidden = match ? 'false' : 'true';
+          if (match) { rowHasVisible = true; anyVisible = true; }
+        });
+
+        row.dataset.hidden = rowHasVisible ? 'false' : 'true';
+      });
+
+      // hide entire category if all rows hidden
+      document.querySelectorAll('.category').forEach(cat => {
+        const rows = cat.querySelectorAll('.tool-row');
+        const allHidden = [...rows].every(r => r.dataset.hidden === 'true');
+        cat.dataset.hidden = allHidden ? 'true' : 'false';
+      });
+
+      noResults.style.display = anyVisible ? 'none' : 'block';
+      searchTermEl.textContent = raw;
+      updateCounts();
+    });
+
+    /* ── Update category counts ── */
+    function updateCounts() {
+      const raw = searchInput.value.trim();
+
+      // Linguagens
+      const lingCards = [...document.querySelectorAll('#cat-linguagens .card:not(.soon)')];
+      const lingVisible = raw
+        ? lingCards.filter(c => c.dataset.hidden !== 'true').length
+        : lingCards.length;
+      document.getElementById('count-linguagens').textContent =
+        `${lingVisible} tutorial${lingVisible !== 1 ? 'is' : ''}`;
+
+      // Ferramentas
+      const ferrCards = [...document.querySelectorAll('#cat-ferramentas .card:not(.soon)')];
+      const ferrVisible = raw
+        ? ferrCards.filter(c => c.dataset.hidden !== 'true').length
+        : ferrCards.length;
+      document.getElementById('count-ferramentas').textContent =
+        `${ferrVisible} tutorial${ferrVisible !== 1 ? 'is' : ''}`;
+
+      // Total
+      const total = lingVisible + ferrVisible;
+      document.getElementById('stat-total').textContent = total;
+    }
+
+    /* ── Keyboard shortcut: / to focus search ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+
+    /* ── Init: calcula contadores na carga ── */
+    updateCounts();
+  </script>
 </body>
+
 </html>

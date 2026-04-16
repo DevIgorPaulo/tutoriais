@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git: do Básico ao Avançado</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ══════════════════════════════════════════════════
+     🎨 THEME CONFIG — troque aqui para cada ferramenta
+     ══════════════════════════════════════════════════
+
+     Git        → --accent: #F05032  --accent2: #FF6B4A  --icon: 🌿
+     Docker     → --accent: #2496ED  --accent2: #1A7AC7  --icon: 🐳
+     Python     → --accent: #FFD343  --accent2: #3776AB  --icon: 🐍
+     JavaScript → --accent: #F7DF1E  --accent2: #323330  --icon: ⚡
+     Rust       → --accent: #CE4A00  --accent2: #E05A24  --icon: 🦀
+     Linux      → --accent: #FFA500  --accent2: #E69500  --icon: 🐧
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    /* ── Tema atual: Git ── */
+    --accent:    #F05032;   /* cor principal da ferramenta */
+    --accent2:   #FF8C6B;   /* variante clara */
+    --accent3:   #60a5fa;   /* azul para keywords */
+    --accent4:   #a78bfa;   /* roxo para operators */
+    --accent-ok: #4ade80;   /* verde para sucesso */
+
+    /* ── Base (nunca muda) ── */
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  /* ── derived glow ── */
+  :root {
+    --glow: color-mix(in srgb, var(--accent) 18%, transparent);
+    --glow-sm: color-mix(in srgb, var(--accent) 10%, transparent);
+    --accent-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── subtle hex grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(240,80,50,0.08) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── diagonal stripe top accent ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* decorative branch lines behind hero */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, var(--accent) 60%, var(--accent) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 .tool-name {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  /* underline bar that matches accent */
+  .hero h1 .tool-name::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 480px;
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-badge-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: border-color .2s, color .2s;
+  }
+
+  .badge:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 52px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .toc::before {
+    content: '$ git --help';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    pointer-events: none;
+  }
+
+  .toc h2 {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+
+  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+
+  .toc ol li a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+
+  .toc ol li a:hover {
+    color: var(--accent);
+    padding-left: 4px;
+  }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px;
+    scroll-margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  /* left accent bar on section header */
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .section.visible .section-header::before { opacity: 0.4; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap {
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .code-label::before {
+    content: '▸';
+    opacity: 0.6;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+
+  /* terminal prompt line */
+  pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 60%);
+    opacity: 0.3;
+    border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }
+  .kw  { color: var(--accent); font-weight: 700; }   /* git commands — accent color */
+  .fl  { color: var(--accent2); }                    /* flags */
+  .st  { color: var(--accent-ok); }                  /* strings */
+  .op  { color: var(--accent4); }                    /* output/operators */
+
+  p code, li code {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent-border);
+  }
+
+  .copy-btn.copied {
+    color: var(--accent-ok);
+    opacity: 1;
+  }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn {
+    display: flex;
+    gap: 13px;
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+
+  .tip-icon, .warn-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ COMMAND CARDS ══ */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .cmd-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color .2s, background .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cmd-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .cmd-card:hover { border-color: var(--accent-border); }
+  .cmd-card:hover::before { opacity: 1; }
+
+  .cmd-card code {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .cmd-card p {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent2); font-weight: 600; }
+
+  strong { color: var(--text); }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  footer .accent { color: var(--accent); }
+
+  footer .version {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  footer .v-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero { animation: fadeUp .5s ease forwards; }
+  .toc  { animation: fadeUp .5s .12s ease both; }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+
+  .back-sep {
+    color: var(--border);
+    font-size: 14px;
+  }
+
+  .back-current {
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Ferramentas</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Git</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Tutorial Completo
+      </span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Git</span></h1>
+    <p class="hero-desc">Do primeiro commit ao rebase interativo — guia prático no terminal com exemplos reais.</p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">10</span>
+        <span class="stat-label">Módulos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">40+</span>
+        <span class="stat-label">Comandos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">v2.x</span>
+        <span class="stat-label">Versão Git</span>
+      </div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">Configuração</span>
+      <span class="badge">Branches</span>
+      <span class="badge">Stash</span>
+      <span class="badge">Rebase</span>
+      <span class="badge">Cherry-pick</span>
+      <span class="badge">Boas Práticas</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> Configuração Inicial</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Criando Repositórios</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Ciclo Básico de Trabalho</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Branches</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Histórico e Revisão</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Reescrevendo Histórico</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Cherry-pick</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Stash</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Git Remoto</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Dicas Avançadas</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Configuração Inicial</h2>
+    </div>
+    <p>Antes de usar o Git, configure seu nome e e-mail. Essas informações aparecerão em cada commit que você fizer.</p>
+    <div class="code-wrap">
+      <div class="code-label">terminal</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Configurar nome do usuário</span>
+<span class="kw">git config</span> <span class="fl">--global</span> user.name <span class="st">"Seu Nome"</span>
+
+<span class="cm"># Configurar email</span>
+<span class="kw">git config</span> <span class="fl">--global</span> user.email <span class="st">"seu.email@exemplo.com"</span>
+
+<span class="cm"># Verificar configuração</span>
+<span class="kw">git config</span> <span class="fl">--list</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div><code>--global</code> faz a configuração valer para <strong>todos os projetos</strong> no seu computador. Para um projeto específico, tire o <code>--global</code>.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Criando e Inicializando Repositórios</h2>
+    </div>
+    <p><strong>Criar um repositório local:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">mkdir</span> meu-projeto
+<span class="kw">cd</span> meu-projeto
+<span class="kw">git init</span></code></pre>
+    </div>
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">Initialized empty Git repository in /caminho/meu-projeto/.git/</span></code></pre>
+    </div>
+    <p><strong>Clonar um repositório existente:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git clone</span> <span class="st">https://github.com/usuario/repositorio.git</span></code></pre>
+    </div>
+    <p>Isso cria uma pasta com todos os arquivos do repositório remoto, incluindo o histórico completo de commits.</p>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Ciclo Básico de Trabalho</h2>
+    </div>
+    <p>O fluxo do dia a dia com Git segue 4 passos fundamentais:</p>
+
+    <p><strong>Passo 1 — Verificar status</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git status</span></code></pre>
+    </div>
+    <p>Mostra arquivos modificados, não adicionados ou prontos para commit.</p>
+
+    <p><strong>Passo 2 — Adicionar mudanças</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git add</span> arquivo.txt       <span class="cm"># Adiciona um arquivo específico</span>
+<span class="kw">git add</span> .                 <span class="cm"># Adiciona todas as mudanças</span></code></pre>
+    </div>
+
+    <p><strong>Passo 3 — Criar um commit</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git commit</span> <span class="fl">-m</span> <span class="st">"Mensagem explicando a mudança"</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Use mensagens curtas e claras. Ex.: <code>"fix: corrige bug no login"</code></div>
+    </div>
+
+    <p><strong>Passo 4 — Enviar para o remoto</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git push</span> origin main</code></pre>
+    </div>
+    <ul>
+      <li><code>origin</code> — nome do repositório remoto</li>
+      <li><code>main</code> — branch principal (ou <code>master</code> em alguns casos)</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Branches (Ramificações)</h2>
+    </div>
+    <p>Branches permitem desenvolver funcionalidades isoladas sem afetar o código principal.</p>
+
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <code>git checkout -b minha-branch</code>
+        <p>Cria e troca para uma nova branch</p>
+      </div>
+      <div class="cmd-card">
+        <code>git checkout main</code>
+        <p>Troca para a branch main</p>
+      </div>
+      <div class="cmd-card">
+        <code>git branch</code>
+        <p>Lista branches locais</p>
+      </div>
+      <div class="cmd-card">
+        <code>git branch -a</code>
+        <p>Lista todas, inclusive remotas</p>
+      </div>
+    </div>
+
+    <p><strong>Merge — unir branches:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git checkout</span> main
+<span class="kw">git merge</span> minha-branch</code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Se houver conflitos, o Git vai sinalizar e você deve resolvê-los manualmente antes de continuar.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Histórico e Revisão</h2>
+    </div>
+
+    <p><strong>Ver commits:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git log</span>
+<span class="kw">git log</span> <span class="fl">--oneline</span>               <span class="cm"># versão resumida</span>
+<span class="kw">git log</span> <span class="fl">--graph --oneline --all</span>  <span class="cm"># visual bonito do histórico</span></code></pre>
+    </div>
+
+    <p><strong>Ver mudanças:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git diff</span>                <span class="cm"># alterações não adicionadas</span>
+<span class="kw">git diff</span> <span class="fl">--staged</span>       <span class="cm"># alterações prontas para commit</span></code></pre>
+    </div>
+
+    <p><strong>Blame — quem alterou cada linha:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git blame</span> arquivo.txt</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Reescrevendo Histórico</h2>
+    </div>
+
+    <p><strong>Rebase Interativo — juntar commits (squash):</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git rebase</span> <span class="fl">-i</span> HEAD~3</code></pre>
+    </div>
+    <ul>
+      <li>Escolha <code>pick</code> para manter ou <code>squash</code> para unir commits</li>
+      <li>Excelente para limpar histórico antes de enviar PR</li>
+    </ul>
+
+    <p><strong>Alterar último commit:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git commit</span> <span class="fl">--amend</span> <span class="fl">-m</span> <span class="st">"Nova mensagem do commit"</span></code></pre>
+    </div>
+
+    <p><strong>Reset — voltar commits:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git reset</span> <span class="fl">--soft</span> HEAD~1   <span class="cm"># mantém alterações no stage</span>
+<span class="kw">git reset</span> <span class="fl">--hard</span> HEAD~1   <span class="cm"># perde alterações completamente</span></code></pre>
+    </div>
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><strong>Cuidado:</strong> <code>--hard</code> apaga mudanças permanentemente, sem chance de recuperar.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>Cherry-pick</h2>
+    </div>
+    <p>Aplica commits específicos de outra branch, sem precisar fazer merge completo.</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git checkout</span> main
+<span class="kw">git cherry-pick</span> abc123   <span class="cm"># aplica commit específico pelo hash</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Útil quando você quer pegar só partes de outra branch, sem trazer todas as mudanças.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>Stash (Guardar Temporariamente)</h2>
+    </div>
+    <p>Guarda mudanças em progresso sem precisar criar um commit.</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git stash</span>          <span class="cm"># guarda mudanças atuais</span>
+<span class="kw">git stash list</span>     <span class="cm"># lista stashes salvos</span>
+<span class="kw">git stash apply</span>    <span class="cm"># reaplica último stash (mantém na lista)</span>
+<span class="kw">git stash pop</span>      <span class="cm"># reaplica e remove do stash</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Ótimo quando precisa trocar de branch sem commitar o trabalho atual.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>Git Remoto</h2>
+    </div>
+
+    <p><strong>Adicionar repositório remoto:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git remote add</span> origin <span class="st">https://github.com/usuario/repositorio.git</span></code></pre>
+    </div>
+
+    <p><strong>Atualizar branch local com o remoto:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git fetch</span> origin         <span class="cm"># busca dados do remoto sem aplicar</span>
+<span class="kw">git pull</span> origin main     <span class="cm"># busca e aplica no branch atual</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div><code>fetch</code> só baixa os dados. <code>pull</code> baixa e aplica automaticamente no seu branch.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>Dicas Avançadas e Boas Práticas</h2>
+    </div>
+    <ul>
+      <li><strong>Squash and Merge</strong> no GitHub para manter histórico limpo</li>
+      <li><strong>Blame</strong> para rastrear a origem de bugs</li>
+      <li>Use <strong>branches pequenas e frequentes</strong></li>
+      <li>Mensagens de commit no padrão: <code>tipo: descrição</code> — ex.: <code>fix: corrige bug no login</code></li>
+      <li>Sempre faça <strong>pull antes de push</strong> para evitar conflitos</li>
+    </ul>
+
+    <p><strong>Visualização em árvore do histórico:</strong></p>
+    <div class="code-wrap">
+      <div class="code-label">comando favorito</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">git log</span> <span class="fl">--graph --decorate --oneline --all</span></code></pre>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">📊</span>
+      <div>Saída visual em formato de árvore — fácil de entender ramificações e merges.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div>
+      <span class="accent">git</span> tutorial &nbsp;·&nbsp; terminal guide
+    </div>
+    <div class="version">
+      <span class="v-dot"></span>
+      do básico ao avançado
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('pre');
+    const code = pre.querySelector('code');
+    const text = code.innerText || code.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker: Do Básico ao Avançado</title>
+<meta name="description" content="Tutorial completo de Docker — containers, imagens, Dockerfile, volumes, Docker Compose, redes e multi-stage build com exemplos práticos.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ══════════════════════════════════════════════════
+     🎨 THEME CONFIG — Docker 🐳
+     --accent:  #2496ED  (azul Docker)
+     --accent2: #1A7AC7  (azul Docker escuro)
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    --accent:    #2496ED;
+    --accent2:   #1A7AC7;
+    --accent3:   #60a5fa;
+    --accent4:   #c084fc;
+    --accent-ok: #4ade80;
+
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  :root {
+    --glow: color-mix(in srgb, var(--accent) 18%, transparent);
+    --glow-sm: color-mix(in srgb, var(--accent) 10%, transparent);
+    --accent-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg: color-mix(in srgb, var(--accent2) 8%, transparent);
+    --accent2-border: color-mix(in srgb, var(--accent2) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(36,150,237,0.07) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent2));
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, var(--accent2) 60%, var(--accent2) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .hero-tag-dark {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent2-bg);
+    border: 1px solid var(--accent2-border);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 .tool-name {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero h1 .tool-name::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .hero h1 .topic-name { color: var(--accent2); }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 520px;
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-val-dark { color: var(--accent2); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: border-color .2s, color .2s;
+  }
+
+  .badge:hover { border-color: var(--accent-border); color: var(--accent); }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 52px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .toc::before {
+    content: 'docker-compose up -d';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    pointer-events: none;
+  }
+
+  .toc h2 {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+
+  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+
+  .toc ol li a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+
+  .toc ol li a:hover { color: var(--accent); padding-left: 4px; }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px;
+    scroll-margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .section.visible { opacity: 1; transform: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .section.visible .section-header::before { opacity: 0.5; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap { position: relative; margin: 20px 0; }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .code-label::before { content: '▸'; opacity: 0.6; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+
+  pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, transparent 100%);
+    opacity: 0.35;
+    border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }   /* # comment */
+  .kw  { color: var(--accent); font-weight: 700; }    /* keywords (FROM, RUN) */
+  .kw2 { color: var(--accent3); font-weight: 700; }   /* secondary keywords */
+  .fl  { color: #f97316; }                            /* flags / built-ins */
+  .st  { color: var(--accent-ok); }                   /* strings / values */
+  .op  { color: var(--accent4); }                     /* output */
+  .num { color: #f472b6; }                            /* numbers / ports */
+  .fn  { color: #60a5fa; }                            /* commands */
+
+  p code, li code {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-border); }
+  .copy-btn.copied { color: var(--accent-ok); opacity: 1; }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex;
+    gap: 13px;
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+
+  .info {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-left: 3px solid var(--accent);
+  }
+
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ CONCEPT CARDS ══ */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .concept-card:hover { border-color: var(--accent-border); }
+  .concept-card:hover::before { opacity: 1; }
+
+  .concept-card .cc-icon { font-size: 22px; margin-bottom: 8px; }
+  .concept-card .cc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .concept-card code {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .concept-card p { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+  /* ══ TABLE ══ */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--surface); }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+
+  tbody td { padding: 11px 16px; color: var(--text); vertical-align: top; }
+  tbody td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+  }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+  strong { color: var(--text); }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  footer .accent { color: var(--accent); }
+  footer .version { display: flex; align-items: center; gap: 6px; }
+  footer .v-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero { animation: fadeUp .5s ease forwards; }
+  .toc  { animation: fadeUp .5s .12s ease both; }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+  .back-sep { color: var(--border); font-size: 14px; }
+  .back-current { color: var(--accent); }
+
+  /* ══ ANALOGY BOX ══ */
+  .analogy {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+  }
+
+  .analogy-side {
+    text-align: center;
+  }
+
+  .analogy-icon { font-size: 28px; margin-bottom: 8px; }
+  .analogy-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .analogy-desc { font-size: 12.5px; color: var(--muted); }
+
+  .analogy-arrow {
+    font-size: 24px;
+    color: var(--accent);
+    opacity: 0.5;
+  }
+
+  @media(max-width: 500px) {
+    .analogy { grid-template-columns: 1fr; text-align: center; }
+    .analogy-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Ferramentas</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Docker</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Tutorial Completo
+      </span>
+      <span class="hero-tag-dark">Docker 🐳</span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Docker</span> do <span class="topic-name">zero</span></h1>
+    <p class="hero-desc">De <code>docker run</code> ao <code>docker-compose</code> — containers, imagens, volumes, redes e multi-stage build na prática.</p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">12</span>
+        <span class="stat-label">Módulos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val stat-val-dark">5</span>
+        <span class="stat-label">Conceitos-chave</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">v24+</span>
+        <span class="stat-label">Versão Docker</span>
+      </div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">container</span>
+      <span class="badge">image</span>
+      <span class="badge">Dockerfile</span>
+      <span class="badge">volumes</span>
+      <span class="badge">docker-compose</span>
+      <span class="badge">multi-stage</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> O que é Docker?</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Conceitos fundamentais</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Comandos essenciais</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Rodando containers</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Gerenciando imagens</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Criando o Dockerfile</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Volumes e persistência</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Docker Compose</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Redes e variáveis</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Otimização e cache</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span> Boas práticas e erros</a></li>
+      <li><a href="#s12"><span class="toc-num">12</span> Exemplo real completo</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>🐳 O que é Docker?</h2>
+    </div>
+
+    <p>Docker é uma plataforma que permite <strong>empacotar</strong> e rodar aplicações em <strong>containers</strong> — ambientes isolados e portáteis que contêm tudo que a aplicação precisa para funcionar.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-icon">💻</div>
+        <p>Código da aplicação</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">📦</div>
+        <p>Dependências e bibliotecas</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">⚙️</div>
+        <p>Runtime (PHP, Node, Python...)</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">🌍</div>
+        <p>Variáveis de ambiente</p>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-side">
+        <div class="analogy-icon">😅</div>
+        <div class="analogy-label">Sem Docker</div>
+        <div class="analogy-desc">"Na minha máquina funciona..."</div>
+      </div>
+      <div class="analogy-arrow">→</div>
+      <div class="analogy-side">
+        <div class="analogy-icon">👍</div>
+        <div class="analogy-label">Com Docker</div>
+        <div class="analogy-desc">"Funciona em qualquer lugar!"</div>
+      </div>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">🧠</span>
+      <div><strong>Por que usar Docker?</strong> Padroniza ambientes, elimina conflitos de versão, facilita deploy, isola aplicações e garante que dev, homolog e produção rodem exatamente o mesmo ambiente.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>📦 Conceitos fundamentais</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-title">🖼️ Image (Imagem)</div>
+        <p>Modelo <strong>somente-leitura</strong> da aplicação. É a "receita" — define tudo que o container vai ter.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">📦 Container</div>
+        <p><strong>Instância em execução</strong> de uma imagem. Isolado, leve e descartável.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">📄 Dockerfile</div>
+        <p>Arquivo de texto com <strong>instruções</strong> para construir uma imagem passo a passo.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">🌐 Docker Hub</div>
+        <p>Repositório público de imagens — como o GitHub, mas para containers.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">🗂️ Volume</div>
+        <p>Armazenamento <strong>persistente</strong> que sobrevive ao ciclo de vida do container.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">🔗 Network</div>
+        <p>Rede interna que permite containers <strong>se comunicarem</strong> entre si.</p>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-side">
+        <div class="analogy-icon">📄</div>
+        <div class="analogy-label">Image</div>
+        <div class="analogy-desc">A receita do bolo</div>
+      </div>
+      <div class="analogy-arrow">→</div>
+      <div class="analogy-side">
+        <div class="analogy-icon">🎂</div>
+        <div class="analogy-label">Container</div>
+        <div class="analogy-desc">O bolo pronto</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>⚡ Comandos essenciais</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">verificar instalação</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">--version</span>
+<span class="cm"># Docker version 24.x.x</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">listar containers</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">ps</span>         <span class="cm"># containers rodando</span>
+<span class="fn">docker</span> <span class="kw">ps</span> <span class="fl">-a</span>      <span class="cm"># todos (incluindo parados)</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">gerenciar containers</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">stop</span>   &lt;id&gt;    <span class="cm"># para container</span>
+<span class="fn">docker</span> <span class="kw">start</span>  &lt;id&gt;    <span class="cm"># inicia container parado</span>
+<span class="fn">docker</span> <span class="kw">rm</span>     &lt;id&gt;    <span class="cm"># remove container</span>
+<span class="fn">docker</span> <span class="kw">rm</span> <span class="fl">-f</span>  &lt;id&gt;    <span class="cm"># força remoção</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">listar imagens</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">images</span>          <span class="cm"># lista imagens locais</span>
+<span class="fn">docker</span> <span class="kw">rmi</span> &lt;imagem&gt;    <span class="cm"># remove imagem</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">logs e acesso</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">logs</span> &lt;id&gt;              <span class="cm"># ver logs do container</span>
+<span class="fn">docker</span> <span class="kw">logs</span> <span class="fl">-f</span> &lt;id&gt;           <span class="cm"># logs em tempo real</span>
+<span class="fn">docker</span> <span class="kw">exec</span> <span class="fl">-it</span> &lt;id&gt; <span class="st">bash</span>    <span class="cm"># entrar no container</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Comando</th><th>O que faz</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>docker run</td><td>Cria e inicia um novo container</td></tr>
+          <tr><td>docker start</td><td>Inicia container já existente (parado)</td></tr>
+          <tr><td>docker stop</td><td>Para container graciosamente</td></tr>
+          <tr><td>docker rm</td><td>Remove container parado</td></tr>
+          <tr><td>docker ps</td><td>Lista containers em execução</td></tr>
+          <tr><td>docker images</td><td>Lista imagens locais</td></tr>
+          <tr><td>docker pull</td><td>Baixa imagem do Docker Hub</td></tr>
+          <tr><td>docker build</td><td>Constrói imagem a partir do Dockerfile</td></tr>
+          <tr><td>docker exec</td><td>Executa comando dentro de container</td></tr>
+          <tr><td>docker logs</td><td>Exibe logs do container</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>🚀 Rodando containers</h2>
+    </div>
+
+    <p>O comando <code>docker run</code> é o mais importante — ele baixa a imagem (se necessário) e inicia o container.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">primeiro container — hello-world</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">run</span> hello-world</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">nginx — servidor web</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-d</span> <span class="fl">-p</span> <span class="num">8080</span>:<span class="num">80</span> nginx
+
+<span class="cm"># Acesse: http://localhost:8080</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">flags mais usadas do docker run</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">run</span> \
+  <span class="fl">-d</span>              \  <span class="cm"># detached (background)</span>
+  <span class="fl">-p</span> <span class="num">8080</span>:<span class="num">80</span>      \  <span class="cm"># porta (host:container)</span>
+  <span class="fl">--name</span> meu-app  \  <span class="cm"># nome do container</span>
+  <span class="fl">-e</span> <span class="st">VAR=valor</span>    \  <span class="cm"># variável de ambiente</span>
+  <span class="fl">-v</span> $(<span class="fn">pwd</span>):/app  \  <span class="cm"># volume (diretório)</span>
+  <span class="fl">--rm</span>            \  <span class="cm"># remove ao parar</span>
+  nginx</code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">📌</span>
+      <div>A flag <code>-p 8080:80</code> mapeia a <strong>porta 8080 do host</strong> para a <strong>porta 80 do container</strong>. Você acessa pelo host na porta 8080.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>🖼️ Gerenciando imagens</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">baixar imagem do Docker Hub</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">pull</span> node          <span class="cm"># última versão</span>
+<span class="fn">docker</span> <span class="kw">pull</span> node:<span class="num">18</span>       <span class="cm"># versão específica</span>
+<span class="fn">docker</span> <span class="kw">pull</span> node:<span class="num">18</span><span class="st">-alpine</span> <span class="cm"># versão minimalista</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">inspecionar e limpar</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">inspect</span> &lt;id_ou_nome&gt;    <span class="cm"># detalhes do container</span>
+<span class="fn">docker</span> <span class="kw">system</span> prune             <span class="cm"># limpa tudo não usado</span>
+<span class="fn">docker</span> <span class="kw">image</span> prune              <span class="cm"># limpa imagens não usadas</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Prefira imagens <strong>alpine</strong> (ex: <code>node:18-alpine</code>) em produção — são muito menores (< 50MB) que as padrão (> 300MB), tornando o deploy mais rápido.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>📄 Criando o Dockerfile</h2>
+    </div>
+
+    <p>O <code>Dockerfile</code> é o arquivo que descreve como construir sua imagem. Cada linha é uma <strong>instrução</strong> que cria uma camada na imagem.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">Dockerfile — Node.js completo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># imagem base (use alpine para produção)</span>
+<span class="kw">FROM</span> node:<span class="num">18</span><span class="st">-alpine</span>
+
+<span class="cm"># diretório de trabalho dentro do container</span>
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># copia só o package*.json primeiro (otimização de cache)</span>
+<span class="kw">COPY</span> package*.json ./
+
+<span class="cm"># instala dependências</span>
+<span class="kw">RUN</span> npm install
+
+<span class="cm"># copia o restante do código</span>
+<span class="kw">COPY</span> . .
+
+<span class="cm"># porta que o app vai escutar</span>
+<span class="kw">EXPOSE</span> <span class="num">3000</span>
+
+<span class="cm"># comando para iniciar o app</span>
+<span class="kw">CMD</span> [<span class="st">"npm"</span>, <span class="st">"start"</span>]</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">build da imagem</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">build</span> <span class="fl">-t</span> meu-app .        <span class="cm"># . = diretório atual</span>
+<span class="fn">docker</span> <span class="kw">build</span> <span class="fl">-t</span> meu-app:<span class="num">1.0</span> .    <span class="cm"># com versão (tag)</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">rodar o container da sua imagem</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-p</span> <span class="num">3000</span>:<span class="num">3000</span> meu-app</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Instrução</th><th>O que faz</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>FROM</td><td>Define a imagem base</td></tr>
+          <tr><td>WORKDIR</td><td>Define o diretório de trabalho</td></tr>
+          <tr><td>COPY</td><td>Copia arquivos do host para a imagem</td></tr>
+          <tr><td>RUN</td><td>Executa comando durante o build</td></tr>
+          <tr><td>EXPOSE</td><td>Documenta a porta do container</td></tr>
+          <tr><td>ENV</td><td>Define variável de ambiente</td></tr>
+          <tr><td>CMD</td><td>Comando padrão ao iniciar o container</td></tr>
+          <tr><td>ENTRYPOINT</td><td>Ponto de entrada fixo do container</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">.dockerignore — evite copiar arquivos desnecessários</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>node_modules
+.git
+.env
+*.log
+dist
+.DS_Store</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>💾 Volumes e persistência</h2>
+    </div>
+
+    <p>Por padrão, dados gerados dentro de um container são <strong>perdidos</strong> quando ele é removido. Volumes resolvem isso.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">bind mount — mapeia pasta local</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Linux / Mac</span>
+<span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-v</span> $(<span class="fn">pwd</span>):/app node
+
+<span class="cm"># Windows (PowerShell)</span>
+<span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-v</span> ${PWD}:/app node</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">volume nomeado — persistência em produção</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># criar volume</span>
+<span class="fn">docker</span> <span class="kw">volume</span> create meu-volume
+
+<span class="cm"># usar volume nomeado</span>
+<span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-v</span> meu-volume:/app/data minha-imagem
+
+<span class="cm"># listar volumes</span>
+<span class="fn">docker</span> <span class="kw">volume</span> ls
+
+<span class="cm"># remover volume</span>
+<span class="fn">docker</span> <span class="kw">volume</span> rm meu-volume</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tipo</th><th>Sintaxe</th><th>Uso ideal</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bind mount</td>
+            <td><code>-v /local:/container</code></td>
+            <td>Desenvolvimento (hot reload)</td>
+          </tr>
+          <tr>
+            <td>Volume nomeado</td>
+            <td><code>-v nome:/container</code></td>
+            <td>Produção (banco de dados)</td>
+          </tr>
+          <tr>
+            <td>tmpfs</td>
+            <td><code>--tmpfs /container</code></td>
+            <td>Dados temporários em memória</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div>Nunca armazene dados permanentes (banco de dados, uploads) sem volume. Se o container for removido com <code>docker rm</code>, os dados somem.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>🎼 Docker Compose</h2>
+    </div>
+
+    <p>O <strong>Docker Compose</strong> permite definir e rodar <strong>múltiplos containers</strong> com um único arquivo <code>docker-compose.yml</code>.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">docker-compose.yml — PHP + MySQL</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">version</span>: <span class="st">"3.8"</span>
+
+<span class="kw">services</span>:
+  <span class="fn">app</span>:
+    <span class="kw">image</span>: php:<span class="num">8.2</span><span class="st">-apache</span>
+    <span class="kw">ports</span>:
+      - <span class="st">"8080:80"</span>
+    <span class="kw">volumes</span>:
+      - .:/var/www/html
+    <span class="kw">depends_on</span>:
+      - db
+
+  <span class="fn">db</span>:
+    <span class="kw">image</span>: mysql:<span class="num">8.0</span>
+    <span class="kw">environment</span>:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: meubanco
+    <span class="kw">volumes</span>:
+      - db_data:/var/lib/mysql
+
+<span class="kw">volumes</span>:
+  <span class="fn">db_data</span>:</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">comandos do Compose</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker-compose</span> <span class="kw">up</span> <span class="fl">-d</span>      <span class="cm"># sobe tudo em background</span>
+<span class="fn">docker-compose</span> <span class="kw">down</span>        <span class="cm"># para e remove containers</span>
+<span class="fn">docker-compose</span> <span class="kw">down</span> <span class="fl">-v</span>     <span class="cm"># remove também os volumes</span>
+<span class="fn">docker-compose</span> <span class="kw">ps</span>          <span class="cm"># lista serviços rodando</span>
+<span class="fn">docker-compose</span> <span class="kw">logs</span> <span class="fl">-f</span>     <span class="cm"># logs em tempo real</span>
+<span class="fn">docker-compose</span> <span class="kw">build</span>       <span class="cm"># reconstrói imagens</span>
+<span class="fn">docker-compose</span> <span class="kw">restart</span>     <span class="cm"># reinicia serviços</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">✔</span>
+      <div>Use Docker Compose para <strong>todo projeto com mais de um serviço</strong> — é a forma mais prática de orquestrar app + banco + cache + filas localmente.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>🔗 Redes e variáveis de ambiente</h2>
+    </div>
+
+    <p>Containers no mesmo Compose <strong>se comunicam pelo nome do serviço</strong> — Docker cria uma rede interna automaticamente.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">comunicação entre serviços</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">services</span>:
+  <span class="fn">api</span>:
+    <span class="kw">build</span>: .
+    <span class="kw">environment</span>:
+      DB_HOST: <span class="st">db</span>        <span class="cm"># nome do serviço, não IP!</span>
+      DB_PORT: <span class="num">3306</span>
+    <span class="kw">depends_on</span>:
+      - db
+
+  <span class="fn">db</span>:
+    <span class="kw">image</span>: mysql:<span class="num">8.0</span>
+    <span class="kw">environment</span>:
+      MYSQL_ROOT_PASSWORD: root</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">usando arquivo .env</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># .env</span>
+MYSQL_ROOT_PASSWORD=<span class="st">minhasenha</span>
+DB_NAME=<span class="st">meubanco</span>
+
+<span class="cm"># docker-compose.yml</span>
+<span class="kw">environment</span>:
+  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  MYSQL_DATABASE: ${DB_NAME}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">redes personalizadas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">networks</span>:
+  <span class="fn">backend</span>:
+    <span class="kw">driver</span>: bridge
+
+<span class="kw">services</span>:
+  <span class="fn">api</span>:
+    <span class="kw">networks</span>:
+      - backend
+  <span class="fn">db</span>:
+    <span class="kw">networks</span>:
+      - backend</code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div>Nunca commite o arquivo <code>.env</code> com senhas no Git. Adicione ao <code>.gitignore</code> e use <code>.env.example</code> com valores genéricos.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>⚙️ Otimização e Multi-stage build</h2>
+    </div>
+
+    <p>Duas técnicas essenciais para <strong>imagens menores</strong> e builds mais rápidos:</p>
+
+    <p><strong>1. Cache de camadas</strong> — coloque o que muda menos primeiro:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">ordem certa — aproveita cache do Docker</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># ✅ Copia package.json ANTES do código fonte</span>
+<span class="cm"># Se o código mudar mas package.json não, RUN npm install usa cache!</span>
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm install   <span class="cm"># ← só roda de novo se package.json mudar</span>
+<span class="kw">COPY</span> . .          <span class="cm"># ← copia código (muda com frequência)</span></code></pre>
+    </div>
+
+    <p><strong>2. Multi-stage build</strong> — separe build de runtime:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">multi-stage — Node.js → Nginx</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Estágio 1: build da aplicação</span>
+<span class="kw">FROM</span> node:<span class="num">18</span><span class="st">-alpine</span> <span class="kw2">AS</span> builder
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm install
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> npm run build
+
+<span class="cm"># Estágio 2: imagem final (apenas o build!)</span>
+<span class="kw">FROM</span> nginx:<span class="st">alpine</span>
+<span class="kw">COPY</span> <span class="fl">--from</span>=builder /app/dist /usr/share/nginx/html
+<span class="kw">EXPOSE</span> <span class="num">80</span>
+<span class="cm"># Imagem final não tem Node.js, npm, código fonte...</span>
+<span class="cm"># Resultado: ~50MB ao invés de ~400MB!</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Técnica</th><th>Benefício</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Imgens alpine</td>
+            <td>Base ~5MB ao invés de ~150MB</td>
+          </tr>
+          <tr>
+            <td>Cache de camadas</td>
+            <td>Rebuilds mais rápidos no CI/CD</td>
+          </tr>
+          <tr>
+            <td>Multi-stage build</td>
+            <td>Imagem final sem ferramentas de build</td>
+          </tr>
+          <tr>
+            <td>.dockerignore</td>
+            <td>Exclui arquivos desnecessários do contexto</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>🔹 Boas práticas e erros comuns</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-title">✔ Um serviço por container</div>
+        <p>Não coloque banco + app no mesmo container. Separe responsabilidades.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ Imagens oficiais</div>
+        <p>Use sempre imagens oficiais do Docker Hub como base.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ Não rode como root</div>
+        <p>Use <code>USER</code> no Dockerfile para segurança em produção.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ Versione suas imagens</div>
+        <p>Use tags específicas (<code>node:18</code>) — nunca <code>:latest</code> em prod.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">❌ problemas comuns e soluções</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># ❌ Porta já em uso</span>
+<span class="op">Error response from daemon: port is already allocated</span>
+<span class="cm"># ✅ Solução: use outra porta ou pare o serviço conflitante</span>
+<span class="fn">docker</span> <span class="kw">run</span> <span class="fl">-p</span> <span class="num">8081</span>:<span class="num">80</span> nginx
+
+<span class="cm"># ❌ Container não sobe? Veja os logs!</span>
+<span class="fn">docker</span> <span class="kw">logs</span> &lt;container_id&gt;
+
+<span class="cm"># ❌ Permissão negada no Linux</span>
+<span class="fn">sudo</span> usermod <span class="fl">-aG</span> docker $USER
+<span class="cm"># Faça logout e login para aplicar</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">segurança — usuário não-root no Dockerfile</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">FROM</span> node:<span class="num">18</span><span class="st">-alpine</span>
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> npm install
+
+<span class="cm"># criar usuário não-root</span>
+<span class="kw">RUN</span> addgroup <span class="fl">-S</span> appgroup && adduser <span class="fl">-S</span> appuser <span class="fl">-G</span> appgroup
+<span class="kw">USER</span> appuser
+
+<span class="kw">CMD</span> [<span class="st">"npm"</span>, <span class="st">"start"</span>]</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 12 -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>🔹 Exemplo real completo</h2>
+    </div>
+
+    <p>Projeto <strong>Node.js API + MySQL</strong> orquestrado com Docker Compose:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">Dockerfile da API</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">FROM</span> node:<span class="num">18</span><span class="st">-alpine</span>
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm install <span class="fl">--production</span>
+<span class="kw">COPY</span> . .
+<span class="kw">EXPOSE</span> <span class="num">3000</span>
+<span class="kw">CMD</span> [<span class="st">"node"</span>, <span class="st">"src/server.js"</span>]</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">docker-compose.yml</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">version</span>: <span class="st">"3.8"</span>
+
+<span class="kw">services</span>:
+  <span class="fn">api</span>:
+    <span class="kw">build</span>: .
+    <span class="kw">ports</span>:
+      - <span class="st">"3000:3000"</span>
+    <span class="kw">environment</span>:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASS: ${DB_PASSWORD}
+      DB_NAME: meubanco
+    <span class="kw">depends_on</span>:
+      - mysql
+    <span class="kw">restart</span>: unless-stopped
+
+  <span class="fn">mysql</span>:
+    <span class="kw">image</span>: mysql:<span class="num">8.0</span>
+    <span class="kw">environment</span>:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: meubanco
+    <span class="kw">volumes</span>:
+      - mysql_data:/var/lib/mysql
+    <span class="kw">restart</span>: unless-stopped
+
+<span class="kw">volumes</span>:
+  <span class="fn">mysql_data</span>:</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">.env</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>DB_PASSWORD=<span class="st">senhasegura123</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">deploy — 3 comandos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">docker-compose</span> <span class="kw">build</span>      <span class="cm"># constrói imagens</span>
+<span class="fn">docker-compose</span> <span class="kw">up</span> <span class="fl">-d</span>     <span class="cm"># sobe tudo</span>
+<span class="fn">docker-compose</span> <span class="kw">logs</span> <span class="fl">-f</span>   <span class="cm"># acompanha logs</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">resumo mental</div>
+      <pre><code><span class="cm"># Image      → molde imutável</span>
+<span class="cm"># Container  → instância em execução</span>
+<span class="cm"># Dockerfile → receita para criar imagem</span>
+<span class="cm"># Compose    → orquestra múltiplos containers</span>
+<span class="cm"># Volume     → persistência de dados</span>
+<span class="cm"># Network    → comunicação entre containers</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Próximo nível:</strong> deploy com Docker em VPS, Docker + Nginx + SSL, CI/CD com GitHub Actions + Docker e Kubernetes para orquestração em escala.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div>
+      <span class="accent">dev</span> tutoriais &nbsp;·&nbsp; Docker
+    </div>
+    <div class="version">
+      <span class="v-dot"></span>
+      <span class="accent">🐳</span> v24+
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  /* ── copy button ── */
+  function copyCode(btn) {
+    const code = btn.nextElementSibling;
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copiar';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+
+  /* ── intersection observer (fade-in sections) ── */
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08 }
+  );
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

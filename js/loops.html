@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript: Loops (Laços de Repetição)</title>
+<meta name="description" content="Tutorial completo sobre loops em JavaScript — for, while, do...while, for...of, for...in, forEach, map, filter e reduce com exemplos práticos.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ══════════════════════════════════════════════════
+     🎨 THEME CONFIG — JavaScript ⚡
+     --accent:  #F7DF1E  (amarelo JS)
+     --accent2: #323330  (preto JS / cinza escuro)
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    /* ── Tema: JavaScript ── */
+    --accent:    #F7DF1E;   /* amarelo JS */
+    --accent2:   #9CA3AF;   /* cinza claro como segundo tom */
+    --accent3:   #60a5fa;   /* azul para keywords */
+    --accent4:   #c084fc;   /* roxo para operators */
+    --accent-ok: #4ade80;   /* verde para sucesso */
+
+    /* ── Base (nunca muda) ── */
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  /* ── derived glow ── */
+  :root {
+    --glow: color-mix(in srgb, var(--accent) 18%, transparent);
+    --glow-sm: color-mix(in srgb, var(--accent) 10%, transparent);
+    --accent-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg: color-mix(in srgb, var(--accent2) 8%, transparent);
+    --accent2-border: color-mix(in srgb, var(--accent2) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── subtle dot grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(247,223,30,0.07) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── dual-color top accent stripe ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #323330, var(--accent), #323330);
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* decorative lines behind hero */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, rgba(156,163,175,0.5) 60%, rgba(156,163,175,0.5) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .hero-tag-gray {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(50,51,48,0.3);
+    border: 1px solid rgba(156,163,175,0.2);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 .tool-name {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  /* underline bar that matches accent */
+  .hero h1 .tool-name::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), rgba(156,163,175,0.5));
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .hero h1 .topic-name {
+    color: var(--accent2);
+  }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 480px;
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-val-gray {
+    color: var(--accent2);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-badge-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: border-color .2s, color .2s;
+  }
+
+  .badge:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 52px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .toc::before {
+    content: 'const loops = require("js")';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    pointer-events: none;
+  }
+
+  .toc h2 {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+
+  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+
+  .toc ol li a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+
+  .toc ol li a:hover {
+    color: var(--accent);
+    padding-left: 4px;
+  }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px;
+    scroll-margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  /* left accent bar on section header */
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), rgba(156,163,175,0.5));
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .section.visible .section-header::before { opacity: 0.5; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap {
+    position: relative;
+    margin: 20px 0;
+  }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .code-label::before {
+    content: '▸';
+    opacity: 0.6;
+  }
+
+  .code-label-gray {
+    color: var(--accent2) !important;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+
+  /* JS top gradient line */
+  pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, rgba(156,163,175,0.5) 50%, transparent 100%);
+    opacity: 0.35;
+    border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }               /* // comment */
+  .kw  { color: var(--accent); font-weight: 700; }                /* for / while / let */
+  .kw2 { color: var(--accent3); font-weight: 700; }              /* of / in / const */
+  .fl  { color: #f97316; }                                        /* built-in funcs */
+  .st  { color: var(--accent-ok); }                               /* strings */
+  .op  { color: var(--accent4); }                                 /* output / operators */
+  .num { color: #f472b6; }                                        /* numbers */
+  .fn  { color: #60a5fa; }                                        /* function names */
+
+  p code, li code {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent-border);
+  }
+
+  .copy-btn.copied {
+    color: var(--accent-ok);
+    opacity: 1;
+  }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex;
+    gap: 13px;
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+
+  .info {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-left: 3px solid var(--accent);
+  }
+
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ CONCEPT CARDS ══ */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color .2s, background .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), rgba(156,163,175,0.5));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .concept-card:hover { border-color: var(--accent-border); }
+  .concept-card:hover::before { opacity: 1; }
+
+  .concept-card code {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .concept-card p {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ══ TABLE ══ */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead {
+    background: var(--surface);
+  }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover {
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+  }
+
+  tbody td {
+    padding: 11px 16px;
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tbody td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+  }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+
+  strong { color: var(--text); }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  footer .accent { color: var(--accent); }
+  footer .accent2 { color: var(--accent2); }
+
+  footer .version {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  footer .v-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero { animation: fadeUp .5s ease forwards; }
+  .toc  { animation: fadeUp .5s .12s ease both; }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+
+  .back-sep { color: var(--border); font-size: 14px; }
+
+  .back-current { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Linguagens</span>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">JavaScript</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Loops</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Tutorial Completo
+      </span>
+      <span class="hero-tag-gray">JavaScript ⚡</span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Loops</span> em <span class="topic-name">JavaScript</span></h1>
+    <p class="hero-desc">Do <code>for</code> clássico ao <code>reduce</code> moderno — guia prático com exemplos reais, boas práticas e armadilhas comuns.</p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">12</span>
+        <span class="stat-label">Módulos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val stat-val-gray">5</span>
+        <span class="stat-label">Tipos de Loop</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">ES6+</span>
+        <span class="stat-label">Versão JS</span>
+      </div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">for</span>
+      <span class="badge">while</span>
+      <span class="badge">do...while</span>
+      <span class="badge">for...of</span>
+      <span class="badge">for...in</span>
+      <span class="badge">forEach / map / filter</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> O que são loops?</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Loop for</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Loop while</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Loop do...while</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Loop for...of</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Loop for...in</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> break e continue</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> forEach, map, filter</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> reduce</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Loops aninhados e Labels</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span> Boas práticas</a></li>
+      <li><a href="#s12"><span class="toc-num">12</span> Exemplo prático completo</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>🔁 O que são loops?</h2>
+    </div>
+    <p>Loops são <strong>estruturas de controle</strong> que permitem executar um bloco de código várias vezes, automaticamente, sem repetir o código manualmente.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo simples</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">0
+1
+2
+3
+4</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">🧠</span>
+      <div>JavaScript tem <strong>5 tipos principais de loops</strong>: <code>for</code>, <code>while</code>, <code>do...while</code>, <code>for...of</code> e <code>for...in</code>. Além de métodos modernos como <code>forEach</code>, <code>map</code>, <code>filter</code> e <code>reduce</code>.</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Loop</th>
+            <th>Uso principal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>for</td>
+            <td>Loop clássico com contador (mais usado)</td>
+          </tr>
+          <tr>
+            <td>while</td>
+            <td>Repete enquanto condição for verdadeira</td>
+          </tr>
+          <tr>
+            <td>do...while</td>
+            <td>Executa pelo menos 1 vez, depois verifica condição</td>
+          </tr>
+          <tr>
+            <td>for...of</td>
+            <td>Percorre valores de arrays, strings e iteráveis</td>
+          </tr>
+          <tr>
+            <td>for...in</td>
+            <td>Percorre chaves (propriedades) de objetos</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>🔹 Loop for</h2>
+    </div>
+
+    <p>O <code>for</code> é o loop mais clássico e usado. Ideal quando você sabe exatamente <strong>quantas vezes</strong> quer iterar.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (inicialização; condição; incremento) {
+  <span class="cm">// código executado a cada iteração</span>
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo básico</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+}</code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">📌</span>
+      <div>
+        <strong>Como funciona passo a passo:</strong><br>
+        1. <code>let i = 0</code> → inicializa o contador<br>
+        2. <code>i &lt; 5</code> → verifica a condição<br>
+        3. Executa o bloco de código<br>
+        4. <code>i++</code> → incrementa<br>
+        5. Volta ao passo 2 e repete
+      </div>
+    </div>
+
+    <p><strong>Percorrendo um array:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> nomes = [<span class="st">"Ana"</span>, <span class="st">"João"</span>, <span class="st">"Carlos"</span>];
+
+<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nomes.<span class="fn">length</span>; i++) {
+  <span class="fl">console</span>.<span class="fn">log</span>(nomes[i]);
+}
+
+<span class="cm">// "Ana"</span>
+<span class="cm">// "João"</span>
+<span class="cm">// "Carlos"</span></code></pre>
+    </div>
+
+    <p><strong>Loop reverso (de trás pra frente):</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">4</span>; i &gt;= <span class="num">0</span>; i--) {
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+}
+<span class="cm">// 4, 3, 2, 1, 0</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>🔹 Loop while</h2>
+    </div>
+
+    <p>O <code>while</code> repete o bloco enquanto a condição for <strong>verdadeira</strong>. Use quando não sabe exatamente quantas iterações vai precisar.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">while</span> (condição) {
+  <span class="cm">// código</span>
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">let</span> i = <span class="num">0</span>;
+
+<span class="kw">while</span> (i &lt; <span class="num">5</span>) {
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+  i++;
+}
+<span class="cm">// 0, 1, 2, 3, 4</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><strong>Cuidado com loop infinito!</strong> Se a condição nunca for falsa, o programa trava. Sempre garanta que a condição eventualmente mude.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">loop infinito — evite!</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">while</span> (<span class="kw">true</span>) {
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"nunca para"</span>);
+  <span class="cm">// só use com break controlado!</span>
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>🔹 Loop do...while</h2>
+    </div>
+
+    <p>O <code>do...while</code> é similar ao <code>while</code>, mas garante que o bloco seja executado <strong>pelo menos uma vez</strong>, mesmo que a condição seja falsa desde o início.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">do</span> {
+  <span class="cm">// código executado ao menos 1x</span>
+} <span class="kw">while</span> (condição);</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">let</span> i = <span class="num">0</span>;
+
+<span class="kw">do</span> {
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+  i++;
+} <span class="kw">while</span> (i &lt; <span class="num">5</span>);
+<span class="cm">// 0, 1, 2, 3, 4</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Loop</th>
+            <th>Executa se condição = false?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>while</td>
+            <td>❌ Não executa nenhuma vez</td>
+          </tr>
+          <tr>
+            <td>do...while</td>
+            <td>✅ Executa pelo menos 1 vez</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">diferença na prática</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">let</span> i = <span class="num">10</span>;
+
+<span class="kw">while</span> (i &lt; <span class="num">5</span>) {
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"while"</span>); <span class="cm">// não executa</span>
+}
+
+<span class="kw">do</span> {
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"do...while"</span>); <span class="cm">// executa 1 vez!</span>
+} <span class="kw">while</span> (i &lt; <span class="num">5</span>);</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>🔹 Loop for...of (valores)</h2>
+    </div>
+
+    <p>O <code>for...of</code> percorre <strong>valores</strong> de arrays, strings, Maps, Sets e qualquer iterável. É mais limpo e legível que o <code>for</code> clássico para arrays.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw2">const</span> valor <span class="kw2">of</span> iterável) {
+  <span class="cm">// código</span>
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">percorrendo array</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> numeros = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>];
+
+<span class="kw">for</span> (<span class="kw">const</span> n <span class="kw2">of</span> numeros) {
+  <span class="fl">console</span>.<span class="fn">log</span>(n);
+}
+<span class="cm">// 10, 20, 30</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">percorrendo string</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">const</span> letra <span class="kw2">of</span> <span class="st">"JavaScript"</span>) {
+  <span class="fl">console</span>.<span class="fn">log</span>(letra);
+}
+<span class="cm">// J, a, v, a, S, c, r, i, p, t</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">com objetos complexos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> usuarios = [
+  { nome: <span class="st">"Igor"</span>, idade: <span class="num">25</span> },
+  { nome: <span class="st">"Ana"</span>,  idade: <span class="num">20</span> }
+];
+
+<span class="kw">for</span> (<span class="kw">const</span> u <span class="kw2">of</span> usuarios) {
+  <span class="fl">console</span>.<span class="fn">log</span>(u.nome);
+}</code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">✔</span>
+      <div>Prefira <code>for...of</code> para arrays no lugar do <code>for</code> clássico — é mais legível e menos propenso a erros de índice.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>🔹 Loop for...in (chaves)</h2>
+    </div>
+
+    <p>O <code>for...in</code> percorre as <strong>chaves (propriedades)</strong> de um objeto. É feito para objetos literais, não para arrays.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo com objeto</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> pessoa = {
+  nome: <span class="st">"Igor"</span>,
+  idade: <span class="num">25</span>,
+  cidade: <span class="st">"SP"</span>
+};
+
+<span class="kw">for</span> (<span class="kw">const</span> chave <span class="kw2">in</span> pessoa) {
+  <span class="fl">console</span>.<span class="fn">log</span>(chave, pessoa[chave]);
+}
+<span class="cm">// nome Igor</span>
+<span class="cm">// idade 25</span>
+<span class="cm">// cidade SP</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><strong>Não use <code>for...in</code> em arrays!</strong> Ele percorre índices como strings e pode incluir propriedades herdadas do protótipo. Use <code>for...of</code> ou <code>forEach</code> para arrays.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">evite isso com arrays</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ❌ evite</span>
+<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw2">in</span> [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>]) {
+  <span class="cm">// i é "0", "1", "2" — strings!</span>
+}
+
+<span class="cm">// ✅ use for...of</span>
+<span class="kw">for</span> (<span class="kw">const</span> n <span class="kw2">of</span> [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>]) {
+  <span class="fl">console</span>.<span class="fn">log</span>(n); <span class="cm">// 10, 20, 30</span>
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>🔹 break e continue</h2>
+    </div>
+
+    <p>Dois comandos para controlar o fluxo dentro de loops:</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <code>break</code>
+        <p>Para o loop completamente e sai dele.</p>
+      </div>
+      <div class="concept-card">
+        <code>continue</code>
+        <p>Pula a iteração atual e vai para a próxima.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">break — para o loop</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">10</span>; i++) {
+  <span class="kw">if</span> (i === <span class="num">5</span>) <span class="kw">break</span>;
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+}
+<span class="cm">// 0, 1, 2, 3, 4</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">continue — pula iteração</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
+  <span class="kw">if</span> (i === <span class="num">2</span>) <span class="kw">continue</span>;
+  <span class="fl">console</span>.<span class="fn">log</span>(i);
+}
+<span class="cm">// 0, 1, 3, 4  (pulou o 2)</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>🔹 forEach, map e filter</h2>
+    </div>
+
+    <p>Métodos de array modernos que muitas vezes <strong>substituem loops</strong> por um código mais expressivo e funcional.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">forEach — executar para cada item</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+
+nums.<span class="fn">forEach</span>(n =&gt; {
+  <span class="fl">console</span>.<span class="fn">log</span>(n);
+});
+<span class="cm">// 1, 2, 3</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">map — transformar dados (retorna novo array)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+
+<span class="kw">const</span> dobrados = nums.<span class="fn">map</span>(n =&gt; n * <span class="num">2</span>);
+
+<span class="fl">console</span>.<span class="fn">log</span>(dobrados); <span class="cm">// [2, 4, 6]</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">filter — filtrar dados (retorna novo array)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>];
+
+<span class="kw">const</span> pares = nums.<span class="fn">filter</span>(n =&gt; n % <span class="num">2</span> === <span class="num">0</span>);
+
+<span class="fl">console</span>.<span class="fn">log</span>(pares); <span class="cm">// [2, 4]</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Método</th>
+            <th>O que faz</th>
+            <th>Retorna</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>forEach</td>
+            <td>Executa função para cada item</td>
+            <td>undefined</td>
+          </tr>
+          <tr>
+            <td>map</td>
+            <td>Transforma cada item</td>
+            <td>Novo array</td>
+          </tr>
+          <tr>
+            <td>filter</td>
+            <td>Filtra itens por condição</td>
+            <td>Novo array</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">✔</span>
+      <div>Use <code>map</code> quando quiser <strong>transformar</strong> dados. Use <code>filter</code> quando quiser <strong>filtrar</strong> dados. Evite usar <code>forEach</code> quando <code>map</code>/<code>filter</code> resolveriam melhor.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>🔹 reduce</h2>
+    </div>
+
+    <p>O <code>reduce</code> <strong>acumula valores</strong> de um array em um único resultado. É o método mais poderoso, mas também o mais complexo.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>array.<span class="fn">reduce</span>((acumulador, valorAtual) =&gt; {
+  <span class="kw">return</span> novoAcumulador;
+}, valorInicial);</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">soma de valores</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>];
+
+<span class="kw">const</span> soma = nums.<span class="fn">reduce</span>((acc, n) =&gt; acc + n, <span class="num">0</span>);
+
+<span class="fl">console</span>.<span class="fn">log</span>(soma); <span class="cm">// 10</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">contar ocorrências</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> frutas = [<span class="st">"maçã"</span>, <span class="st">"banana"</span>, <span class="st">"maçã"</span>, <span class="st">"maçã"</span>];
+
+<span class="kw">const</span> contagem = frutas.<span class="fn">reduce</span>((acc, fruta) =&gt; {
+  acc[fruta] = (acc[fruta] || <span class="num">0</span>) + <span class="num">1</span>;
+  <span class="kw">return</span> acc;
+}, {});
+
+<span class="fl">console</span>.<span class="fn">log</span>(contagem);
+<span class="cm">// { maçã: 3, banana: 1 }</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">💡</span>
+      <div>O <code>reduce</code> é poderoso porque pode fazer tudo que <code>map</code> e <code>filter</code> fazem — mas use-os separados quando possível, pois são mais legíveis.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>🔹 Loops aninhados e Labels</h2>
+    </div>
+
+    <p><strong>Loops aninhados</strong> (nested loops) são loops dentro de loops. Úteis para matrizes e tabelas.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">loops aninhados</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+  <span class="kw">for</span> (<span class="kw">let</span> j = <span class="num">0</span>; j &lt; <span class="num">2</span>; j++) {
+    <span class="fl">console</span>.<span class="fn">log</span>(i, j);
+  }
+}
+<span class="cm">// 0 0 | 0 1</span>
+<span class="cm">// 1 0 | 1 1</span>
+<span class="cm">// 2 0 | 2 1</span></code></pre>
+    </div>
+
+    <p><strong>Labels</strong> são rótulos que permitem sair de loops externos com <code>break</code> ou <code>continue</code>:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">labels — avançado</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>outer: <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+  <span class="kw">for</span> (<span class="kw">let</span> j = <span class="num">0</span>; j &lt; <span class="num">3</span>; j++) {
+    <span class="kw">if</span> (i === <span class="num">1</span> &amp;&amp; j === <span class="num">1</span>) <span class="kw">break</span> outer;
+    <span class="fl">console</span>.<span class="fn">log</span>(i, j);
+  }
+}
+<span class="cm">// 0 0 | 0 1 | 0 2 | 1 0  (para aqui)</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div>Labels são incomuns em JS moderno. Use com moderação — geralmente uma função ou refatoração resolve melhor.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>🔹 Boas práticas</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <code>for...of > for</code>
+        <p>Prefira for...of para arrays — mais limpo e sem erros de índice.</p>
+      </div>
+      <div class="concept-card">
+        <code>map/filter > forEach</code>
+        <p>Use métodos funcionais quando precisar transformar ou filtrar dados.</p>
+      </div>
+      <div class="concept-card">
+        <code>const no loop</code>
+        <p>Use const dentro de for...of e for...in (não varia).</p>
+      </div>
+      <div class="concept-card">
+        <code>let no for clássico</code>
+        <p>Use let para o contador do for (i) — ele precisa variar.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">✅ boas práticas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ✅ for...of para arrays</span>
+<span class="kw">for</span> (<span class="kw">const</span> item <span class="kw2">of</span> array) { ... }
+
+<span class="cm">// ✅ map para transformar</span>
+<span class="kw">const</span> dobro = nums.<span class="fn">map</span>(n =&gt; n * <span class="num">2</span>);
+
+<span class="cm">// ✅ filter para filtrar</span>
+<span class="kw">const</span> ativos = usuarios.<span class="fn">filter</span>(u =&gt; u.ativo);
+
+<span class="cm">// ✅ sempre inicialize a variável</span>
+<span class="kw">let</span> i = <span class="num">0</span>;
+<span class="kw">while</span> (i &lt; <span class="num">5</span>) { i++; }</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">❌ erros comuns</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ❌ esquecer incremento → loop infinito</span>
+<span class="kw">while</span> (i &lt; <span class="num">5</span>) {
+  <span class="fl">console</span>.<span class="fn">log</span>(i); <span class="cm">// nunca incrementa!</span>
+}
+
+<span class="cm">// ❌ for...in em array</span>
+<span class="kw">for</span> (<span class="kw">const</span> i <span class="kw2">in</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]) {} <span class="cm">// índices como string</span>
+
+<span class="cm">// ❌ modificar array enquanto percorre</span>
+<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; arr.<span class="fn">length</span>; i++) {
+  arr.<span class="fn">pop</span>(); <span class="cm">// comportamento imprevisível!</span>
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 12 -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>🔹 Exemplo prático completo</h2>
+    </div>
+
+    <p>Calculando a <strong>soma dos números ímpares</strong> de um array usando diferentes abordagens:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">abordagem 1 — for...of com continue</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> numeros = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>];
+<span class="kw">let</span> soma = <span class="num">0</span>;
+
+<span class="kw">for</span> (<span class="kw">const</span> n <span class="kw2">of</span> numeros) {
+  <span class="kw">if</span> (n % <span class="num">2</span> === <span class="num">0</span>) <span class="kw">continue</span>;
+  soma += n;
+}
+
+<span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Soma dos ímpares:"</span>, soma); <span class="cm">// 9</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">abordagem 2 — filter + reduce (estilo funcional)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> numeros = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>];
+
+<span class="kw">const</span> soma = numeros
+  .<span class="fn">filter</span>(n =&gt; n % <span class="num">2</span> !== <span class="num">0</span>)
+  .<span class="fn">reduce</span>((acc, n) =&gt; acc + n, <span class="num">0</span>);
+
+<span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Soma dos ímpares:"</span>, soma); <span class="cm">// 9</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">resumo mental — quando usar cada loop</div>
+      <pre><code><span class="cm">// for      → loop clássico com contador</span>
+<span class="cm">// while    → baseado em condição</span>
+<span class="cm">// do-while → executa pelo menos 1 vez</span>
+<span class="cm">// for...of → valores de arrays/strings</span>
+<span class="cm">// for...in → chaves de objetos</span>
+<span class="cm">// forEach  → executar para cada item</span>
+<span class="cm">// map      → transformar array</span>
+<span class="cm">// filter   → filtrar array</span>
+<span class="cm">// reduce   → acumular em um valor</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Caminho recomendado de estudo:</strong> domine o <code>for</code> → aprenda <code>while</code> → use <code>for...of</code> no dia a dia → domine <code>map</code> / <code>filter</code> / <code>reduce</code> → explore loops aninhados.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div>
+      <span class="accent">dev</span> tutoriais &nbsp;·&nbsp; JavaScript
+    </div>
+    <div class="version">
+      <span class="v-dot"></span>
+      <span class="accent">⚡</span> ES6+
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  /* ── copy button ── */
+  function copyCode(btn) {
+    const code = btn.nextElementSibling;
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copiar';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+
+  /* ── intersection observer (fade-in sections) ── */
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08 }
+  );
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

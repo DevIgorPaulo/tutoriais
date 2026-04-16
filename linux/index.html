@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Linux — Do Básico ao Avançado</title>
+<meta name="description" content="Tutorial completo de Terminal Linux — navegação, arquivos, permissões, grep, pipes, processos, scripts bash, SSH e automação com exemplos práticos.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ══════════════════════════════════════════════════
+     🎨 THEME CONFIG — Linux 🐧
+     --accent:  #FFA500  (laranja Linux)
+     --accent2: #E69500  (laranja escuro)
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    --accent:    #FFA500;
+    --accent2:   #E69500;
+    --accent3:   #60a5fa;
+    --accent4:   #c084fc;
+    --accent-ok: #4ade80;
+
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  :root {
+    --glow: color-mix(in srgb, var(--accent) 18%, transparent);
+    --glow-sm: color-mix(in srgb, var(--accent) 10%, transparent);
+    --accent-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg: color-mix(in srgb, var(--accent2) 8%, transparent);
+    --accent2-border: color-mix(in srgb, var(--accent2) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,165,0,0.07) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent2));
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, var(--accent2) 60%, var(--accent2) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  /* penguin decoration */
+  .hero::after {
+    content: '🐧';
+    position: absolute;
+    bottom: 24px;
+    right: 32px;
+    font-size: 72px;
+    opacity: 0.07;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .hero-tag-dark {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent2-bg);
+    border: 1px solid var(--accent2-border);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 .tool-name {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero h1 .tool-name::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .hero h1 .topic-name { color: var(--accent2); }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 520px;
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-val-dark { color: var(--accent2); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: border-color .2s, color .2s;
+  }
+
+  .badge:hover { border-color: var(--accent-border); color: var(--accent); }
+
+  /* ══ PROMPT DECORATION ══ */
+  .prompt-demo {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 22px;
+    margin-bottom: 28px;
+    position: relative;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .prompt-demo::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+    opacity: 0.4;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .prompt-user { color: var(--accent-ok); font-weight: 700; }
+  .prompt-at { color: var(--muted); }
+  .prompt-host { color: var(--accent3); font-weight: 700; }
+  .prompt-path { color: var(--accent); }
+  .prompt-dollar { color: var(--accent2); font-weight: 700; margin: 0 4px; }
+  .prompt-cmd { color: var(--text); }
+  .prompt-cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--accent);
+    opacity: 0.9;
+    animation: cursor-blink 1s ease-in-out infinite;
+    vertical-align: middle;
+    border-radius: 1px;
+  }
+
+  @keyframes cursor-blink {
+    0%,100% { opacity: 0.9; }
+    50%      { opacity: 0; }
+  }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 52px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .toc::before {
+    content: '$ man linux-tutorial';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    pointer-events: none;
+  }
+
+  .toc h2 {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+
+  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+
+  .toc ol li a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+
+  .toc ol li a:hover { color: var(--accent); padding-left: 4px; }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px;
+    scroll-margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .section.visible { opacity: 1; transform: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .section.visible .section-header::before { opacity: 0.5; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap { position: relative; margin: 20px 0; }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .code-label::before { content: '▸'; opacity: 0.6; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+
+  pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, transparent 100%);
+    opacity: 0.35;
+    border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }    /* # comment */
+  .kw  { color: var(--accent); font-weight: 700; }     /* comandos principais */
+  .kw2 { color: var(--accent3); font-weight: 700; }    /* flags / opções */
+  .fl  { color: #f97316; }                             /* valores / argumentos */
+  .st  { color: var(--accent-ok); }                   /* strings */
+  .op  { color: var(--accent4); }                     /* saída / output */
+  .num { color: #f472b6; }                            /* números */
+  .fn  { color: var(--accent2); font-weight: 700; }   /* sub-comandos */
+  .pr  { color: var(--accent-ok); font-weight: 700; } /* prompt $ */
+
+  p code, li code {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-border); }
+  .copy-btn.copied { color: var(--accent-ok); opacity: 1; }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex;
+    gap: 13px;
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+
+  .info {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-left: 3px solid var(--accent);
+  }
+
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ CONCEPT CARDS ══ */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .concept-card:hover { border-color: var(--accent-border); }
+  .concept-card:hover::before { opacity: 1; }
+
+  .concept-card .cc-icon { font-size: 22px; margin-bottom: 8px; }
+
+  .concept-card .cc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .concept-card code {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .concept-card p { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+  /* ══ SHORTCUT GRID ══ */
+  .shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .shortcut-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color .2s;
+  }
+
+  .shortcut-item:hover { border-color: var(--accent-border); }
+
+  .shortcut-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .shortcut-desc { font-size: 13px; color: var(--muted); }
+
+  /* ══ TABLE ══ */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--surface); }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+
+  tbody td { padding: 11px 16px; color: var(--text); vertical-align: top; }
+  tbody td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+  strong { color: var(--text); }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 24px 0 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  footer .accent { color: var(--accent); }
+  footer .version { display: flex; align-items: center; gap: 6px; }
+  footer .v-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.6; animation: blink 3s ease-in-out infinite; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero { animation: fadeUp .5s ease forwards; }
+  .toc  { animation: fadeUp .5s .12s ease both; }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+  .back-sep { color: var(--border); font-size: 14px; }
+  .back-current { color: var(--accent); }
+
+  /* ══ PERMISSION VISUAL ══ */
+  .perm-box {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .perm-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+    opacity: 0.35;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .perm-row { display: flex; gap: 4px; align-items: center; margin-bottom: 12px; font-size: 14px; }
+  .perm-block {
+    display: inline-flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 8px;
+  }
+
+  .perm-r { color: var(--accent); font-weight: 700; }
+  .perm-w { color: #f97316; font-weight: 700; }
+  .perm-x { color: var(--accent-ok); font-weight: 700; }
+  .perm-dash { color: var(--muted); }
+  .perm-label { color: var(--muted); font-size: 11px; margin-left: 8px; }
+
+  .perm-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .perm-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .perm-cell span { display: block; font-weight: 700; color: var(--accent); font-size: 14px; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Ferramentas</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Terminal Linux</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Tutorial Completo
+      </span>
+      <span class="hero-tag-dark">Linux 🐧</span>
+    </div>
+    <h1>Dominando o<br><span class="tool-name">Terminal</span> <span class="topic-name">Linux</span></h1>
+    <p class="hero-desc">De <code>cd</code> e <code>ls</code> a scripts bash, grep, pipes e SSH — o terminal sem mistério, com exemplos reais do dia a dia.</p>
+
+    <!-- live prompt demo -->
+    <div class="prompt-demo">
+      <span class="prompt-user">igor</span><span class="prompt-at">@</span><span class="prompt-host">penguin</span><span class="prompt-at">:</span><span class="prompt-path">~/projetos</span><span class="prompt-dollar">$</span>
+      <span class="prompt-cmd">cat tutorial.sh | grep magic</span>
+      <span class="prompt-cursor"></span>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">13</span>
+        <span class="stat-label">Módulos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val stat-val-dark">50+</span>
+        <span class="stat-label">Comandos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">bash</span>
+        <span class="stat-label">Shell</span>
+      </div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">navegação</span>
+      <span class="badge">arquivos</span>
+      <span class="badge">grep / find</span>
+      <span class="badge">pipes</span>
+      <span class="badge">permissões</span>
+      <span class="badge">scripts bash</span>
+      <span class="badge">SSH</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> O que é o terminal?</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Navegação no sistema</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Manipulação de arquivos</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Visualizar conteúdo</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Busca — grep e find</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Permissões</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Processos e sistema</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Redirecionamento e pipes</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Scripts bash</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Rede e pacotes</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span> SSH e automação</a></li>
+      <li><a href="#s12"><span class="toc-num">12</span> Atalhos e produtividade</a></li>
+      <li><a href="#s13"><span class="toc-num">13</span> Boas práticas e erros comuns</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>🖥️ O que é o terminal?</h2>
+    </div>
+
+    <p>O terminal (ou <strong>shell</strong>) é uma interface de texto onde você controla o sistema digitando comandos — em vez de clicar em ícones.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-icon">⚡</div>
+        <p>Mais rápido que interface gráfica</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">🖥️</div>
+        <p>Essencial para servidores remotos</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">🔧</div>
+        <p>Base para Docker, Git e deploy</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">🤖</div>
+        <p>Automatização com scripts</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura de um comando</div>
+      <pre><code>comando  [opções]  [argumentos]
+
+<span class="kw">ls</span>  <span class="kw2">-l</span>  <span class="fl">/home</span>
+ ↑     ↑        ↑
+cmd  opção  argumento</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Shell</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td>bash</td><td>Padrão na maioria das distros Linux</td></tr>
+          <tr><td>zsh</td><td>Mais moderno, com autocompletar avançado</td></tr>
+          <tr><td>sh</td><td>POSIX básico, portátil entre sistemas</td></tr>
+          <tr><td>fish</td><td>Amigável para iniciantes, syntax highlighting</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">🐧</span>
+      <div>O pinguim <strong>Tux</strong> é o mascote oficial do Linux. O terminal é a ferramenta favorita de todo bom Tux! Use <code>--help</code> ou <code>man comando</code> para aprender qualquer comando.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>📂 Navegação no sistema</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">onde estou?</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">pwd</span>
+<span class="op">/home/igor/projetos</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">listar arquivos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">ls</span>              <span class="cm"># listagem simples</span>
+<span class="pr">$</span> <span class="kw">ls</span> <span class="kw2">-l</span>          <span class="cm"># detalhado (permissões, tamanho)</span>
+<span class="pr">$</span> <span class="kw">ls</span> <span class="kw2">-a</span>          <span class="cm"># inclui arquivos ocultos (. e ..)</span>
+<span class="pr">$</span> <span class="kw">ls</span> <span class="kw2">-la</span>         <span class="cm"># detalhado + ocultos</span>
+<span class="pr">$</span> <span class="kw">ls</span> <span class="kw2">-lh</span>         <span class="cm"># tamanho legível (KB, MB)</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">navegar entre pastas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">cd</span> <span class="fl">pasta</span>         <span class="cm"># entra na pasta</span>
+<span class="pr">$</span> <span class="kw">cd</span> <span class="fl">..</span>            <span class="cm"># volta um nível</span>
+<span class="pr">$</span> <span class="kw">cd</span> <span class="fl">~</span>             <span class="cm"># vai para home do usuário</span>
+<span class="pr">$</span> <span class="kw">cd</span> <span class="fl">/</span>             <span class="cm"># vai para raiz do sistema</span>
+<span class="pr">$</span> <span class="kw">cd</span> <span class="fl">-</span>             <span class="cm"># volta à pasta anterior</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">caminhos — absoluto vs relativo</div>
+      <pre><code><span class="cm"># Absoluto — começa da raiz /</span>
+<span class="kw">cd</span> <span class="fl">/home/igor/projetos</span>
+
+<span class="cm"># Relativo — começa de onde você está</span>
+<span class="kw">cd</span> <span class="fl">../outra-pasta</span>
+<span class="kw">cd</span> <span class="fl">subpasta/arquivo</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Atalho</th><th>Significa</th></tr></thead>
+        <tbody>
+          <tr><td>~</td><td>Home do usuário atual (/home/igor)</td></tr>
+          <tr><td>.</td><td>Diretório atual</td></tr>
+          <tr><td>..</td><td>Diretório pai (um nível acima)</td></tr>
+          <tr><td>/</td><td>Raiz do sistema</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>📁 Manipulação de arquivos</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">criar arquivos e pastas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">touch</span> <span class="fl">arquivo.txt</span>          <span class="cm"># cria arquivo vazio</span>
+<span class="pr">$</span> <span class="kw">touch</span> <span class="fl">a.txt b.txt c.txt</span>   <span class="cm"># cria vários de uma vez</span>
+<span class="pr">$</span> <span class="kw">mkdir</span> <span class="fl">pasta</span>               <span class="cm"># cria pasta</span>
+<span class="pr">$</span> <span class="kw">mkdir</span> <span class="kw2">-p</span> <span class="fl">a/b/c</span>           <span class="cm"># cria estrutura aninhada</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">copiar e mover</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">cp</span> <span class="fl">arquivo.txt copia.txt</span>      <span class="cm"># copia arquivo</span>
+<span class="pr">$</span> <span class="kw">cp</span> <span class="kw2">-r</span> <span class="fl">pasta outra_pasta</span>      <span class="cm"># copia pasta inteira</span>
+
+<span class="pr">$</span> <span class="kw">mv</span> <span class="fl">arquivo.txt novo.txt</span>       <span class="cm"># renomeia arquivo</span>
+<span class="pr">$</span> <span class="kw">mv</span> <span class="fl">arquivo.txt pasta/</span>         <span class="cm"># move para pasta</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">remover</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">rm</span> <span class="fl">arquivo.txt</span>          <span class="cm"># remove arquivo</span>
+<span class="pr">$</span> <span class="kw">rm</span> <span class="kw2">-r</span> <span class="fl">pasta</span>             <span class="cm"># remove pasta e conteúdo</span>
+<span class="pr">$</span> <span class="kw">rm</span> <span class="kw2">-i</span> <span class="fl">arquivo.txt</span>       <span class="cm"># pede confirmação</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><strong><code>rm -rf /</code> — NUNCA faça isso!</strong> Remove recursivamente a raiz inteira do sistema de forma forçada, sem confirmação. Apaga tudo. Para sempre.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">escrever em arquivo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">echo</span> <span class="st">"olá mundo"</span> &gt; <span class="fl">arquivo.txt</span>    <span class="cm"># sobrescreve</span>
+<span class="pr">$</span> <span class="kw">echo</span> <span class="st">"mais texto"</span> &gt;&gt; <span class="fl">arquivo.txt</span>   <span class="cm"># acrescenta</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Comando</th><th>O que faz</th><th>Flag útil</th></tr></thead>
+        <tbody>
+          <tr><td>touch</td><td>Cria arquivo vazio</td><td>—</td></tr>
+          <tr><td>mkdir</td><td>Cria diretório</td><td><code>-p</code> aninhado</td></tr>
+          <tr><td>cp</td><td>Copia</td><td><code>-r</code> recursivo</td></tr>
+          <tr><td>mv</td><td>Move / renomeia</td><td>—</td></tr>
+          <tr><td>rm</td><td>Remove</td><td><code>-r</code> pasta, <code>-i</code> confirma</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>📄 Visualizar conteúdo</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">diferentes formas de ver arquivos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">cat</span> <span class="fl">arquivo.txt</span>      <span class="cm"># exibe tudo de uma vez</span>
+<span class="pr">$</span> <span class="kw">less</span> <span class="fl">arquivo.txt</span>     <span class="cm"># página por página (q para sair)</span>
+<span class="pr">$</span> <span class="kw">head</span> <span class="fl">arquivo.txt</span>     <span class="cm"># primeiras 10 linhas</span>
+<span class="pr">$</span> <span class="kw">head</span> <span class="kw2">-n 20</span> <span class="fl">arquivo.txt</span>  <span class="cm"># primeiras 20 linhas</span>
+<span class="pr">$</span> <span class="kw">tail</span> <span class="fl">arquivo.txt</span>     <span class="cm"># últimas 10 linhas</span>
+<span class="pr">$</span> <span class="kw">tail</span> <span class="kw2">-f</span> <span class="fl">arquivo.txt</span>  <span class="cm"># acompanha em tempo real!</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🔥</span>
+      <div><code>tail -f log.txt</code> é <strong>extremamente útil</strong> para acompanhar logs de aplicações em tempo real — o arquivo vai atualizando na tela conforme novos dados chegam.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">nano — editor no terminal</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">nano</span> <span class="fl">arquivo.txt</span>      <span class="cm"># abre/cria e edita</span>
+<span class="cm"># Ctrl+O → salvar</span>
+<span class="cm"># Ctrl+X → sair</span>
+<span class="cm"># Ctrl+K → cortar linha</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>🔍 Busca — grep e find</h2>
+    </div>
+
+    <h3>grep — busca texto dentro de arquivos</h3>
+
+    <div class="code-wrap">
+      <div class="code-label">grep — exemplos essenciais</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">grep</span> <span class="st">"erro"</span> <span class="fl">arquivo.txt</span>        <span class="cm"># busca em arquivo</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-r</span> <span class="st">"erro"</span> <span class="fl">.</span>             <span class="cm"># busca recursiva na pasta</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-i</span> <span class="st">"erro"</span> <span class="fl">arquivo.txt</span>    <span class="cm"># case insensitive</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-n</span> <span class="st">"erro"</span> <span class="fl">arquivo.txt</span>    <span class="cm"># mostra número da linha</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-v</span> <span class="st">"erro"</span> <span class="fl">arquivo.txt</span>    <span class="cm"># linhas que NÃO têm "erro"</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-c</span> <span class="st">"erro"</span> <span class="fl">arquivo.txt</span>    <span class="cm"># conta ocorrências</span></code></pre>
+    </div>
+
+    <h3>find — busca arquivos no sistema</h3>
+
+    <div class="code-wrap">
+      <div class="code-label">find — exemplos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">find</span> <span class="fl">.</span> <span class="kw2">-name</span> <span class="st">"arquivo.txt"</span>      <span class="cm"># por nome</span>
+<span class="pr">$</span> <span class="kw">find</span> <span class="fl">/home</span> <span class="kw2">-name</span> <span class="st">"*.log"</span>        <span class="cm"># todos os .log em /home</span>
+<span class="pr">$</span> <span class="kw">find</span> <span class="fl">.</span> <span class="kw2">-type</span> <span class="fl">d</span>                  <span class="cm"># só pastas</span>
+<span class="pr">$</span> <span class="kw">find</span> <span class="fl">.</span> <span class="kw2">-type</span> <span class="fl">f</span> <span class="kw2">-name</span> <span class="st">"*.py"</span>    <span class="cm"># arquivos .py</span>
+<span class="pr">$</span> <span class="kw">find</span> <span class="fl">.</span> <span class="kw2">-size</span> +<span class="num">10M</span>              <span class="cm"># arquivos maiores que 10MB</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">grep + find combinados (power combo!)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Busca "TODO" em todos os arquivos .js</span>
+<span class="pr">$</span> <span class="kw">grep</span> <span class="kw2">-r</span> <span class="st">"TODO"</span> <span class="fl">.</span> <span class="kw2">--include</span>=<span class="st">"*.js"</span>
+
+<span class="cm"># Busca erro em logs dos últimos 7 dias</span>
+<span class="pr">$</span> <span class="kw">find</span> <span class="fl">/var/log</span> <span class="kw2">-mtime</span> <span class="fl">-7</span> <span class="kw2">-name</span> <span class="st">"*.log"</span> | <span class="kw">xargs</span> <span class="kw">grep</span> <span class="st">"ERROR"</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>🔐 Permissões</h2>
+    </div>
+
+    <p>Todo arquivo Linux tem permissões de <strong>leitura (r)</strong>, <strong>escrita (w)</strong> e <strong>execução (x)</strong> para 3 grupos: dono, grupo e outros.</p>
+
+    <div class="perm-box">
+      <div class="perm-row">
+        <span style="color:var(--muted);font-size:13px;margin-right:8px;">$ ls -l</span>
+      </div>
+      <div class="perm-row">
+        <span class="perm-block">
+          <span class="perm-r">r</span><span class="perm-w">w</span><span class="perm-x">x</span>
+        </span>
+        <span class="perm-block" style="margin-left:2px;">
+          <span class="perm-r">r</span><span class="perm-w">w</span><span class="perm-dash">-</span>
+        </span>
+        <span class="perm-block" style="margin-left:2px;">
+          <span class="perm-r">r</span><span class="perm-dash">-</span><span class="perm-dash">-</span>
+        </span>
+        <span class="perm-label">→ dono | grupo | outros</span>
+      </div>
+      <div class="perm-grid">
+        <div class="perm-cell"><span style="color:var(--accent)">r</span> = read</div>
+        <div class="perm-cell"><span style="color:#f97316">w</span> = write</div>
+        <div class="perm-cell"><span style="color:var(--accent-ok)">x</span> = execute</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">chmod — alterar permissão</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">chmod</span> <span class="num">755</span> <span class="fl">script.sh</span>      <span class="cm"># rwxr-xr-x</span>
+<span class="pr">$</span> <span class="kw">chmod</span> <span class="num">644</span> <span class="fl">arquivo.txt</span>    <span class="cm"># rw-r--r--</span>
+<span class="pr">$</span> <span class="kw">chmod</span> +<span class="fl">x</span> <span class="fl">script.sh</span>       <span class="cm"># adiciona execução</span>
+<span class="pr">$</span> <span class="kw">chmod</span> <span class="kw2">-R</span> <span class="num">755</span> <span class="fl">pasta/</span>      <span class="cm"># recursivo na pasta</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Número</th><th>Permissão</th><th>Uso típico</th></tr></thead>
+        <tbody>
+          <tr><td>777</td><td>rwxrwxrwx</td><td>Todos podem tudo (evite!)</td></tr>
+          <tr><td>755</td><td>rwxr-xr-x</td><td>Scripts e binários</td></tr>
+          <tr><td>644</td><td>rw-r--r--</td><td>Arquivos de configuração</td></tr>
+          <tr><td>600</td><td>rw-------</td><td>Chaves SSH (só dono lê)</td></tr>
+          <tr><td>700</td><td>rwx------</td><td>Diretórios privados</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">chown e sudo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">chown</span> <span class="fl">igor:igor arquivo.txt</span>    <span class="cm"># muda dono e grupo</span>
+<span class="pr">$</span> <span class="kw">whoami</span>                         <span class="cm"># quem sou eu?</span>
+<span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">comando</span>                   <span class="cm"># executa como root</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>🔄 Processos e sistema</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">ver e gerenciar processos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">ps</span> <span class="fl">aux</span>                  <span class="cm"># lista todos os processos</span>
+<span class="pr">$</span> <span class="kw">ps</span> <span class="fl">aux</span> | <span class="kw">grep</span> <span class="st">node</span>    <span class="cm"># filtra processos do node</span>
+<span class="pr">$</span> <span class="kw">top</span>                     <span class="cm"># monitorar em tempo real</span>
+<span class="pr">$</span> <span class="kw">htop</span>                    <span class="cm"># versão melhorada do top</span>
+
+<span class="pr">$</span> <span class="kw">kill</span> <span class="fl">PID</span>                <span class="cm"># encerra processo</span>
+<span class="pr">$</span> <span class="kw">kill</span> <span class="kw2">-9</span> <span class="fl">PID</span>            <span class="cm"># força encerramento (SIGKILL)</span>
+<span class="pr">$</span> <span class="kw">killall</span> <span class="fl">node</span>           <span class="cm"># mata todos os processos "node"</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">informações do sistema</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">df</span> <span class="kw2">-h</span>       <span class="cm"># espaço em disco</span>
+<span class="pr">$</span> <span class="kw">du</span> <span class="kw2">-sh</span> <span class="fl">pasta/</span>  <span class="cm"># tamanho de uma pasta</span>
+<span class="pr">$</span> <span class="kw">free</span> <span class="kw2">-h</span>     <span class="cm"># memória RAM</span>
+<span class="pr">$</span> <span class="kw">uname</span> <span class="kw2">-a</span>    <span class="cm"># informações do sistema</span>
+<span class="pr">$</span> <span class="kw">uptime</span>      <span class="cm"># tempo ligado + carga</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>🔗 Redirecionamento e pipes</h2>
+    </div>
+
+    <p>Uma das funcionalidades mais poderosas do terminal — <strong>conectar comandos</strong> e redirecionar saídas.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">redirecionamento de saída</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">ls</span> &gt; <span class="fl">lista.txt</span>       <span class="cm"># salva saída (sobrescreve)</span>
+<span class="pr">$</span> <span class="kw">ls</span> &gt;&gt; <span class="fl">lista.txt</span>      <span class="cm"># adiciona ao final</span>
+<span class="pr">$</span> <span class="kw">comando</span> 2&gt; <span class="fl">erros.txt</span> <span class="cm"># redireciona erros (stderr)</span>
+<span class="pr">$</span> <span class="kw">comando</span> &gt; <span class="fl">tudo.txt</span> 2&gt;&amp;1 <span class="cm"># saída e erros juntos</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">pipe | — conecta comandos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Passa saída de um comando como entrada do próximo</span>
+<span class="pr">$</span> <span class="kw">cat</span> <span class="fl">log.txt</span> | <span class="kw">grep</span> <span class="st">"ERROR"</span>
+<span class="pr">$</span> <span class="kw">ps</span> <span class="fl">aux</span> | <span class="kw">grep</span> <span class="st">node</span>
+<span class="pr">$</span> <span class="kw">cat</span> <span class="fl">log.txt</span> | <span class="kw">grep</span> <span class="st">"ERROR"</span> | <span class="kw">less</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">🔥 combos poderosos do dia a dia</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Ver processos node e matar</span>
+<span class="pr">$</span> <span class="kw">ps</span> <span class="fl">aux</span> | <span class="kw">grep</span> <span class="st">node</span>
+
+<span class="cm"># Contar linhas com "erro" no log</span>
+<span class="pr">$</span> <span class="kw">cat</span> <span class="fl">app.log</span> | <span class="kw">grep</span> <span class="st">"erro"</span> | <span class="kw">wc</span> <span class="kw2">-l</span>
+
+<span class="cm"># Ver arquivos mais pesados</span>
+<span class="pr">$</span> <span class="kw">du</span> <span class="kw2">-sh</span> * | <span class="kw">sort</span> <span class="kw2">-rh</span> | <span class="kw">head</span> <span class="kw2">-10</span>
+
+<span class="cm"># Histórico filtrado</span>
+<span class="pr">$</span> <span class="kw">history</span> | <span class="kw">grep</span> <span class="st">"docker"</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">💡</span>
+      <div>O <strong>pipe <code>|</code></strong> é uma das ferramentas mais poderosas do Unix. Aprenda a usá-lo bem e você vai resolver problemas complexos com uma única linha.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>🧾 Scripts bash</h2>
+    </div>
+
+    <p>Scripts bash automatizam tarefas repetitivas — são arquivos de texto com comandos que o shell executa em sequência.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">criando e executando um script</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">nano</span> <span class="fl">script.sh</span>      <span class="cm"># criar e editar</span>
+<span class="pr">$</span> <span class="kw">chmod</span> +<span class="fl">x</span> <span class="fl">script.sh</span>   <span class="cm"># tornar executável</span>
+<span class="pr">$</span> <span class="fl">./script.sh</span>         <span class="cm"># executar</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">script bash — estrutura completa</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>#!/bin/bash
+<span class="cm"># Shebang — diz qual shell usar</span>
+
+<span class="cm"># Variáveis</span>
+NOME=<span class="st">"Igor"</span>
+<span class="kw">echo</span> <span class="st">"Olá, $NOME!"</span>
+
+<span class="cm"># If / else</span>
+<span class="kw">if</span> [ <span class="st">"$NOME"</span> = <span class="st">"Igor"</span> ]; <span class="kw">then</span>
+  <span class="kw">echo</span> <span class="st">"Bem-vindo!"</span>
+<span class="kw">else</span>
+  <span class="kw">echo</span> <span class="st">"Quem é você?"</span>
+<span class="kw">fi</span>
+
+<span class="cm"># Loop for</span>
+<span class="kw">for</span> i <span class="kw">in</span> 1 2 3; <span class="kw">do</span>
+  <span class="kw">echo</span> <span class="st">"Iteração $i"</span>
+<span class="kw">done</span>
+
+<span class="cm"># Loop while</span>
+COUNT=0
+<span class="kw">while</span> [ $COUNT <span class="kw2">-lt</span> 5 ]; <span class="kw">do</span>
+  <span class="kw">echo</span> $COUNT
+  COUNT=$((COUNT + 1))
+<span class="kw">done</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">variáveis e argumentos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Variáveis de ambiente</span>
+<span class="pr">$</span> <span class="kw">export</span> APP_ENV=<span class="st">production</span>
+<span class="pr">$</span> <span class="kw">echo</span> $APP_ENV
+
+<span class="cm"># Argumentos no script ($1, $2...)</span>
+<span class="cm"># ./deploy.sh production</span>
+AMBIENTE=$1
+<span class="kw">echo</span> <span class="st">"Deploying to $AMBIENTE"</span>
+
+<span class="cm"># Variáveis especiais</span>
+<span class="cm"># $0 → nome do script</span>
+<span class="cm"># $# → número de argumentos</span>
+<span class="cm"># $@ → todos os argumentos</span>
+<span class="cm"># $? → código de saída do último comando</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>🌐 Rede e pacotes</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">comandos de rede</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">ip</span> <span class="fl">a</span>                     <span class="cm"># ver interfaces e IPs</span>
+<span class="pr">$</span> <span class="kw">ping</span> <span class="fl">google.com</span>          <span class="cm"># testar conexão</span>
+<span class="pr">$</span> <span class="kw">ping</span> <span class="kw2">-c 4</span> <span class="fl">google.com</span>     <span class="cm"># apenas 4 pings</span>
+<span class="pr">$</span> <span class="kw">curl</span> <span class="fl">https://exemplo.com</span>  <span class="cm"># faz requisição HTTP</span>
+<span class="pr">$</span> <span class="kw">curl</span> <span class="kw2">-o</span> <span class="fl">arquivo.zip</span> <span class="fl">url</span>  <span class="cm"># baixa arquivo</span>
+<span class="pr">$</span> <span class="kw">wget</span> <span class="fl">url</span>                  <span class="cm"># baixa arquivo</span>
+<span class="pr">$</span> <span class="kw">netstat</span> <span class="kw2">-tlnp</span>             <span class="cm"># portas abertas</span>
+<span class="pr">$</span> <span class="kw">ss</span> <span class="kw2">-tlnp</span>                  <span class="cm"># alternativa moderna</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">apt — gerenciador de pacotes (Ubuntu/Debian)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">apt</span> <span class="fn">update</span>              <span class="cm"># atualiza lista de pacotes</span>
+<span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">apt</span> <span class="fn">upgrade</span>             <span class="cm"># atualiza pacotes instalados</span>
+<span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">apt</span> <span class="fn">install</span> <span class="st">nome</span>       <span class="cm"># instala pacote</span>
+<span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">apt</span> <span class="fn">remove</span> <span class="st">nome</span>        <span class="cm"># remove pacote</span>
+<span class="pr">$</span> <span class="fl">apt</span> <span class="fn">search</span> <span class="st">nome</span>             <span class="cm"># busca pacote</span>
+<span class="pr">$</span> <span class="fl">apt</span> <span class="fn">list</span> <span class="kw2">--installed</span>         <span class="cm"># lista instalados</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">crontab — tarefas agendadas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">crontab</span> <span class="kw2">-e</span>   <span class="cm"># editar agendamentos</span>
+<span class="pr">$</span> <span class="kw">crontab</span> <span class="kw2">-l</span>   <span class="cm"># listar agendamentos</span>
+
+<span class="cm"># Formato: minuto hora dia mês dia-semana comando</span>
+<span class="cm">#  *    *   *   *      *      → todo minuto</span>
+<span class="cm">#  0    2   *   *      *      → 02:00 todos os dias</span>
+<span class="cm">#  0    9   *   *      1      → 09:00 toda segunda</span>
+
+<span class="cm"># Exemplo: backup todo dia às 02:00</span>
+<span class="num">0 2</span> * * * /home/igor/backup.sh &gt;&gt; /var/log/backup.log <span class="num">2</span>&gt;&amp;<span class="num">1</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>🔑 SSH e automação</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">SSH — acesso remoto</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="pr">$</span> <span class="kw">ssh</span> <span class="fl">usuario@ip</span>                     <span class="cm"># conectar</span>
+<span class="pr">$</span> <span class="kw">ssh</span> <span class="fl">igor@192.168.1.10</span>               <span class="cm"># exemplo</span>
+<span class="pr">$</span> <span class="kw">ssh</span> <span class="kw2">-p 2222</span> <span class="fl">usuario@ip</span>              <span class="cm"># porta customizada</span>
+<span class="pr">$</span> <span class="kw">ssh</span> <span class="kw2">-i</span> <span class="fl">~/.ssh/minha_chave usuario@ip</span> <span class="cm"># com chave privada</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">gerar e usar chaves SSH</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Gerar par de chaves (pública + privada)</span>
+<span class="pr">$</span> <span class="kw">ssh-keygen</span> <span class="kw2">-t ed25519 -C</span> <span class="st">"igor@email.com"</span>
+
+<span class="cm"># Copiar chave pública para servidor</span>
+<span class="pr">$</span> <span class="kw">ssh-copy-id</span> <span class="fl">usuario@ip</span>
+
+<span class="cm"># Agora entra sem senha!</span>
+<span class="pr">$</span> <span class="kw">ssh</span> <span class="fl">usuario@ip</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">scp e rsync — transferir arquivos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># scp — copia via SSH</span>
+<span class="pr">$</span> <span class="kw">scp</span> <span class="fl">arquivo.txt usuario@ip:/destino</span>
+<span class="pr">$</span> <span class="kw">scp</span> <span class="kw2">-r</span> <span class="fl">pasta/ usuario@ip:/destino</span>
+
+<span class="cm"># rsync — sincroniza pastas (melhor que scp)</span>
+<span class="pr">$</span> <span class="kw">rsync</span> <span class="kw2">-avz</span> <span class="fl">pasta/ usuario@ip:/destino</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">aliases e histórico</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Definir alias (atalho)</span>
+<span class="pr">$</span> <span class="kw">alias</span> ll=<span class="st">"ls -la"</span>
+<span class="pr">$</span> <span class="kw">alias</span> gs=<span class="st">"git status"</span>
+<span class="pr">$</span> <span class="kw">alias</span> update=<span class="st">"sudo apt update && sudo apt upgrade"</span>
+
+<span class="cm"># Salvar permanentemente (adicione ao ~/.bashrc)</span>
+<span class="pr">$</span> <span class="kw">nano</span> <span class="fl">~/.bashrc</span>
+<span class="pr">$</span> <span class="kw">source</span> <span class="fl">~/.bashrc</span>    <span class="cm"># aplicar mudanças</span>
+
+<span class="cm"># Histórico</span>
+<span class="pr">$</span> <span class="kw">history</span>             <span class="cm"># lista comandos anteriores</span>
+<span class="pr">$</span> !<span class="num">42</span>                  <span class="cm"># reexecuta comando #42</span>
+<span class="pr">$</span> !!                   <span class="cm"># reexecuta último comando</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 12 -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>⚡ Atalhos e produtividade</h2>
+    </div>
+
+    <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + C</span>
+        <span class="shortcut-desc">Para o comando em execução</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + Z</span>
+        <span class="shortcut-desc">Pausa / background (use <code>fg</code> para retomar)</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + L</span>
+        <span class="shortcut-desc">Limpa a tela (como <code>clear</code>)</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + A</span>
+        <span class="shortcut-desc">Vai para o início da linha</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + E</span>
+        <span class="shortcut-desc">Vai para o final da linha</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + U</span>
+        <span class="shortcut-desc">Apaga da cursor até o início</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Ctrl + R</span>
+        <span class="shortcut-desc">Busca reversa no histórico</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Tab</span>
+        <span class="shortcut-desc">Autocompletar comandos e caminhos</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">↑ / ↓</span>
+        <span class="shortcut-desc">Navega no histórico de comandos</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">!!</span>
+        <span class="shortcut-desc">Repete último comando (<code>sudo !!</code> é ouro)</span>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">compactação — tar</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># Compactar</span>
+<span class="pr">$</span> <span class="kw">tar</span> <span class="kw2">-czvf</span> <span class="fl">arquivo.tar.gz pasta/</span>
+<span class="cm"># -c criar | -z gzip | -v verbose | -f arquivo</span>
+
+<span class="cm"># Descompactar</span>
+<span class="pr">$</span> <span class="kw">tar</span> <span class="kw2">-xzvf</span> <span class="fl">arquivo.tar.gz</span>
+
+<span class="cm"># Zip / unzip</span>
+<span class="pr">$</span> <span class="kw">zip</span> <span class="kw2">-r</span> <span class="fl">arquivo.zip pasta/</span>
+<span class="pr">$</span> <span class="kw">unzip</span> <span class="fl">arquivo.zip</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 13 -->
+  <section class="section" id="s13">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <h2>🔹 Boas práticas e erros comuns</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-title">✔ Use --help</div>
+        <p>Todo comando tem ajuda embutida: <code>ls --help</code> ou <code>man ls</code>.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ Tab é seu amigo</div>
+        <p>Autocompletar evita erros de digitação em caminhos longos.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ grep + pipe</div>
+        <p>Combine comandos simples com <code>|</code> para resolver problemas complexos.</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">✔ Automatize com scripts</div>
+        <p>Se faz mais de 2 vezes, crie um script.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">❌ erros comuns</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># ❌ Permission denied</span>
+<span class="op">bash: ./script.sh: Permission denied</span>
+<span class="cm"># ✅ Adicione permissão de execução</span>
+<span class="pr">$</span> <span class="kw">chmod</span> +<span class="fl">x</span> <span class="fl">script.sh</span>
+
+<span class="cm"># ❌ Command not found</span>
+<span class="op">bash: htop: command not found</span>
+<span class="cm"># ✅ Instale o pacote</span>
+<span class="pr">$</span> <span class="kw">sudo</span> <span class="fl">apt install</span> <span class="st">htop</span>
+
+<span class="cm"># ❌ Apagar o diretório errado com rm -rf</span>
+<span class="cm"># ✅ Sempre confirme com ls antes de rm -r</span>
+<span class="pr">$</span> <span class="kw">ls</span> <span class="fl">pasta/</span>    <span class="cm"># veja o que tem antes</span>
+<span class="pr">$</span> <span class="kw">rm</span> <span class="kw2">-ri</span> <span class="fl">pasta/</span> <span class="cm"># -i pede confirmação</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">resumo mental — comandos mais usados</div>
+      <pre><code><span class="cm"># cd      → navegar entre pastas</span>
+<span class="cm"># ls      → listar arquivos</span>
+<span class="cm"># pwd     → onde estou?</span>
+<span class="cm"># cp/mv   → copiar / mover</span>
+<span class="cm"># rm      → remover (com cuidado!)</span>
+<span class="cm"># cat     → ver conteúdo</span>
+<span class="cm"># grep    → buscar texto</span>
+<span class="cm"># find    → buscar arquivos</span>
+<span class="cm"># |       → conectar comandos</span>
+<span class="cm"># chmod   → permissões</span>
+<span class="cm"># sudo    → rodar como root</span>
+<span class="cm"># ssh     → acesso remoto</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Caminho recomendado:</strong> domine <code>cd / ls</code> → aprenda <code>cp, rm, mv</code> → uso de <code>grep</code> e <code>find</code> → pipes (<code>|</code>) → processos → scripts bash → SSH e automação.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div>
+      <span class="accent">dev</span> tutoriais &nbsp;·&nbsp; Terminal Linux
+    </div>
+    <div class="version">
+      <span class="v-dot"></span>
+      <span class="accent">🐧</span> bash / zsh
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  /* ── copy button ── */
+  function copyCode(btn) {
+    const code = btn.nextElementSibling;
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copiar';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+
+  /* ── intersection observer (fade-in sections) ── */
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08 }
+  );
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

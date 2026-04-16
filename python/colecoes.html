@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python: Coleções — list, tuple, set, dict</title>
+<meta name="description" content="Tutorial completo de coleções em Python — list, tuple, set e dict com métodos, slicing, comprehension e boas práticas.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:    #FFD343;
+    --accent2:   #3776AB;
+    --accent-ok: #4ade80;
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+
+    --accent-bg:      color-mix(in srgb, var(--accent)  8%, transparent);
+    --accent-border:  color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg:     color-mix(in srgb, var(--accent2)  8%, transparent);
+    --accent2-border: color-mix(in srgb, var(--accent2) 30%, transparent);
+
+    /* collection-type colors */
+    --list-c:  #f97316;
+    --tuple-c: #a78bfa;
+    --set-c:   #34d399;
+    --dict-c:  #38bdf8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    line-height: 1.7; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,211,67,0.07) 1px, transparent 0);
+    background-size: 28px 28px; pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: ''; position: fixed;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent2));
+    z-index: 10;
+  }
+  .wrapper {
+    max-width: 860px; margin: 0 auto;
+    padding: 0 24px 80px; position: relative; z-index: 1;
+  }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; flex-wrap: wrap;
+  }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; transition: color .2s; }
+  .back-link:hover { color: var(--accent); }
+  .back-sep     { color: var(--border); font-size: 14px; }
+  .back-current { color: var(--accent); }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px; border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden; animation: fadeUp .5s ease forwards;
+  }
+  .hero::before {
+    content: ''; position: absolute;
+    top: 0; right: -40px; bottom: 0; width: 380px;
+    background-image:
+      linear-gradient(180deg,transparent 0%,transparent 40%,var(--accent) 40%,var(--accent) 41%,transparent 41%),
+      linear-gradient(180deg,transparent 0%,transparent 60%,var(--accent2) 60%,var(--accent2) 61%,transparent 61%);
+    background-size: 60px 100%; background-position: 0 0, 60px 0; opacity: 0.05; pointer-events: none;
+  }
+  .hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 3px;
+  }
+  .hero-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s ease-in-out infinite; }
+  .hero-tag-blue {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--accent2-bg); border: 1px solid var(--accent2-border);
+    color: var(--accent2); font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 3px;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.03em; margin-bottom: 18px;
+  }
+  .hero h1 .tool-name  { color: var(--accent); position: relative; display: inline-block; }
+  .hero h1 .tool-name::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px; opacity: 0.6;
+  }
+  .hero h1 .topic-name { color: var(--accent2); }
+
+  .hero-desc { color: var(--muted); font-size: 16px; max-width: 480px; font-weight: 300; margin-bottom: 28px; line-height: 1.6; }
+
+  .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val       { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-val-blue  { color: var(--accent2); }
+  .stat-label     { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .hero-badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 4px 11px; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted);
+    background: var(--surface); transition: border-color .2s, color .2s;
+  }
+  .badge:hover { border-color: var(--accent-border); color: var(--accent); }
+
+  /* ══ TYPE OVERVIEW CARDS ══ */
+  .type-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 48px 0 0;
+  }
+  @media(max-width:650px){ .type-grid { grid-template-columns: 1fr 1fr; } }
+  @media(max-width:380px){ .type-grid { grid-template-columns: 1fr; } }
+
+  .type-card {
+    border-radius: 6px; padding: 18px 16px;
+    border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: border-color .2s, transform .2s;
+    background: var(--surface);
+  }
+  .type-card:hover { transform: translateY(-2px); }
+  .type-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+  }
+  .type-card.tc-list   { --tc: var(--list-c); }
+  .type-card.tc-tuple  { --tc: var(--tuple-c); }
+  .type-card.tc-set    { --tc: var(--set-c); }
+  .type-card.tc-dict   { --tc: var(--dict-c); }
+
+  .type-card:hover { border-color: color-mix(in srgb, var(--tc) 40%, transparent); }
+  .type-card::before { background: var(--tc); opacity: 0.7; }
+
+  .type-card-icon  { font-size: 22px; margin-bottom: 8px; }
+  .type-card-name  { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--tc); margin-bottom: 4px; }
+  .type-card-trait { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 4px;
+    padding: 28px 32px; margin: 52px 0;
+    position: relative; overflow: hidden;
+    animation: fadeUp .5s .12s ease both;
+  }
+  .toc::before {
+    content: '>>> from collections import *';
+    position: absolute; top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--border); pointer-events: none;
+  }
+  .toc h2 { font-size: 11px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 20px; }
+  .toc ol { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 40px; }
+  @media(max-width:560px){ .toc ol { grid-template-columns: 1fr; } }
+  .toc ol li a {
+    color: var(--text); text-decoration: none; font-size: 13.5px;
+    display: flex; align-items: center; gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+  .toc ol li a:hover { color: var(--accent); padding-left: 4px; }
+  .toc-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); opacity: 0.6; min-width: 24px; }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px; scroll-margin-top: 28px;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .section.visible { opacity: 1; transform: none; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border); position: relative;
+  }
+  .section-header::before {
+    content: ''; position: absolute;
+    left: -24px; top: 0; bottom: 16px; width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity .3s;
+  }
+  .section.visible .section-header::before { opacity: 0.5; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--accent); background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px; border-radius: 3px; flex-shrink: 0;
+  }
+  .section h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* section type badge */
+  .type-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap { position: relative; margin: 20px 0; }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--accent); opacity: 0.6; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .code-label::before { content: '▸'; opacity: 0.6; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 20px 22px;
+    overflow-x: auto; position: relative;
+  }
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+  pre::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, transparent 100%);
+    opacity: 0.35; border-radius: 6px 6px 0 0;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.8; color: #c9d4d0;
+  }
+  /* highlights */
+  .cm  { color: var(--muted); font-style: italic; }
+  .kw  { color: var(--accent); font-weight: 700; }
+  .kw2 { color: var(--accent2); font-weight: 700; }
+  .fl  { color: #f97316; }
+  .st  { color: var(--accent-ok); }
+  .num { color: #f472b6; }
+  .op  { color: #c084fc; }
+
+  p code, li code {
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: 3px; padding: 1px 7px; font-size: 12.5px;
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 4px 10px; border-radius: 3px;
+    cursor: pointer; opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s; letter-spacing: 0.05em;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-border); }
+  .copy-btn.copied { color: var(--accent-ok); opacity: 1; }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex; gap: 13px; border-radius: 4px;
+    padding: 15px 18px; margin: 20px 0; font-size: 14px; line-height: 1.6;
+  }
+  .tip  { background: color-mix(in srgb, var(--accent-ok) 6%, transparent); border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent); border-left: 3px solid var(--accent-ok); }
+  .warn { background: rgba(251,113,133,.05); border: 1px solid rgba(251,113,133,.18); border-left: 3px solid #fb7185; }
+  .info { background: var(--accent2-bg); border: 1px solid var(--accent2-border); border-left: 3px solid var(--accent2); }
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ METHOD TABLES ══ */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 6px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead { background: var(--surface); }
+  thead th {
+    padding: 10px 14px; text-align: left;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  tbody td { padding: 10px 14px; color: var(--text); vertical-align: top; }
+  tbody td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); }
+  tbody td:last-child { font-size: 13px; color: var(--muted); }
+
+  /* ══ COMPARISON TABLE ══ */
+  .cmp-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0;
+  }
+  @media(max-width:650px){ .cmp-grid { grid-template-columns: 1fr 1fr; } }
+
+  .cmp-col { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .cmp-col-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .cmp-col ul { list-style: none; padding: 0; }
+  .cmp-col li { font-size: 12px; color: var(--muted); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .cmp-col li::before { content: '·'; color: var(--accent); font-weight: 700; }
+
+  /* ══ PILL BADGES ══ */
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .pill      { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--accent-border);  color: var(--accent);  background: var(--accent-bg); }
+  .pill-blue { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--accent2-border); color: var(--accent2); background: var(--accent2-bg); }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+  strong { color: var(--text); }
+
+  h3 { font-size: 1rem; font-weight: 700; margin: 24px 0 10px; color: var(--text); }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 60px 0; }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace; flex-wrap: wrap; gap: 10px;
+  }
+  footer .accent  { color: var(--accent); }
+  footer .accent2 { color: var(--accent2); }
+  footer .version { display: flex; align-items: center; gap: 6px; }
+  footer .v-dot   { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Linguagens</span>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Python</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Coleções</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag"><span class="dot"></span>Tutorial Completo</span>
+      <span class="hero-tag-blue">Python 🐍</span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Coleções</span> em <span class="topic-name">Python</span></h1>
+    <p class="hero-desc">list, tuple, set e dict — do zero ao uso real, com métodos, slicing, comprehension e boas práticas.</p>
+
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">4</span><span class="stat-label">Tipos</span></div>
+      <div class="stat"><span class="stat-val stat-val-blue">12</span><span class="stat-label">Módulos</span></div>
+      <div class="stat"><span class="stat-val">3.x</span><span class="stat-label">Versão Python</span></div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">list</span>
+      <span class="badge">tuple</span>
+      <span class="badge">set</span>
+      <span class="badge">dict</span>
+      <span class="badge">slicing</span>
+      <span class="badge">comprehension</span>
+      <span class="badge">copy</span>
+    </div>
+
+    <!-- TYPE OVERVIEW -->
+    <div class="type-grid">
+      <div class="type-card tc-list">
+        <div class="type-card-icon">📋</div>
+        <div class="type-card-name">list</div>
+        <div class="type-card-trait">Ordenada<br>Mutável<br>Aceita duplicados</div>
+      </div>
+      <div class="type-card tc-tuple">
+        <div class="type-card-icon">🔒</div>
+        <div class="type-card-name">tuple</div>
+        <div class="type-card-trait">Ordenada<br>Imutável<br>Aceita duplicados</div>
+      </div>
+      <div class="type-card tc-set">
+        <div class="type-card-icon">🔵</div>
+        <div class="type-card-name">set</div>
+        <div class="type-card-trait">Sem ordem<br>Mutável<br>Sem duplicados</div>
+      </div>
+      <div class="type-card tc-dict">
+        <div class="type-card-icon">🗂️</div>
+        <div class="type-card-name">dict</div>
+        <div class="type-card-trait">Ordenado (3.7+)<br>Mutável<br>Chave → Valor</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> Listas — criação e acesso</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Listas — métodos e slicing</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> List Comprehension</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Tuplas</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Conjuntos (set)</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Operações matemáticas com sets</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Dicionários — criação e acesso</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Dicionários — métodos e iteração</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Operações úteis gerais</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Copiando coleções</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span> Coleções aninhadas e mistas</a></li>
+      <li><a href="#s12"><span class="toc-num">12</span> Boas práticas + Erros comuns + Exemplo</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>📋 Listas — criação e acesso</h2>
+      <span class="type-badge" style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:#f97316">list</span>
+    </div>
+    <p>Estrutura <strong>ordenada e mutável</strong> — a mais usada em Python.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">criando listas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros  = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]
+nomes    = [<span class="st">"Ana"</span>, <span class="st">"Igor"</span>, <span class="st">"Carlos"</span>]
+misturada = [<span class="num">1</span>, <span class="st">"dois"</span>, <span class="num">3.0</span>, <span class="kw2">True</span>]  <span class="cm"># tipos mistos</span>
+vazia    = []</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">acessando elementos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>]
+
+<span class="fl">print</span>(numeros[<span class="num">0</span>])    <span class="cm"># 10  — primeiro</span>
+<span class="fl">print</span>(numeros[<span class="num">2</span>])    <span class="cm"># 30  — terceiro</span>
+<span class="fl">print</span>(numeros[-<span class="num">1</span>])   <span class="cm"># 40  — último</span>
+<span class="fl">print</span>(numeros[-<span class="num">2</span>])   <span class="cm"># 30  — penúltimo</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">modificando elemento</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros[<span class="num">0</span>] = <span class="num">99</span>     <span class="cm"># substitui o primeiro elemento</span>
+<span class="fl">print</span>(numeros)       <span class="cm"># [99, 20, 30, 40]</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>📋 Listas — métodos e slicing</h2>
+      <span class="type-badge" style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:#f97316">list</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Método</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td>append(x)</td><td>Adiciona <code>x</code> no final</td></tr>
+          <tr><td>insert(i, x)</td><td>Insere <code>x</code> na posição <code>i</code></td></tr>
+          <tr><td>remove(x)</td><td>Remove a primeira ocorrência de <code>x</code></td></tr>
+          <tr><td>pop()</td><td>Remove e retorna o último elemento</td></tr>
+          <tr><td>pop(i)</td><td>Remove e retorna elemento da posição <code>i</code></td></tr>
+          <tr><td>sort()</td><td>Ordena a lista in-place (crescente)</td></tr>
+          <tr><td>reverse()</td><td>Inverte a ordem in-place</td></tr>
+          <tr><td>index(x)</td><td>Retorna o índice de <code>x</code></td></tr>
+          <tr><td>count(x)</td><td>Conta quantas vezes <code>x</code> aparece</td></tr>
+          <tr><td>clear()</td><td>Remove todos os elementos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">métodos em ação</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>nums = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>]
+
+nums.<span class="fl">append</span>(<span class="num">9</span>)      <span class="cm"># [3, 1, 4, 1, 5, 9]</span>
+nums.<span class="fl">insert</span>(<span class="num">0</span>, <span class="num">0</span>)  <span class="cm"># [0, 3, 1, 4, 1, 5, 9]</span>
+nums.<span class="fl">remove</span>(<span class="num">1</span>)     <span class="cm"># remove o primeiro 1 → [0, 3, 4, 1, 5, 9]</span>
+nums.<span class="fl">sort</span>()        <span class="cm"># [0, 1, 3, 4, 5, 9]</span>
+<span class="fl">print</span>(nums.<span class="fl">pop</span>())  <span class="cm"># retorna 9 e remove</span></code></pre>
+    </div>
+
+    <h3>🔸 Fatiamento (slice)</h3>
+    <div class="code-wrap">
+      <div class="code-label">sintaxe: lista[início:fim:passo]</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>nums = [<span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+
+<span class="fl">print</span>(nums[<span class="num">1</span>:<span class="num">4</span>])    <span class="cm"># [1, 2, 3]</span>
+<span class="fl">print</span>(nums[:<span class="num">3</span>])     <span class="cm"># [0, 1, 2]  — do início até 2</span>
+<span class="fl">print</span>(nums[<span class="num">3</span>:])     <span class="cm"># [3, 4, 5]  — do 3 até o fim</span>
+<span class="fl">print</span>(nums[::-<span class="num">1</span>])   <span class="cm"># [5, 4, 3, 2, 1, 0] — invertida</span>
+<span class="fl">print</span>(nums[:<span class="op">:</span><span class="num">2</span>])    <span class="cm"># [0, 2, 4] — passo 2</span></code></pre>
+    </div>
+
+    <h3>🔸 Percorrendo</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>nomes = [<span class="st">"Ana"</span>, <span class="st">"Igor"</span>, <span class="st">"Carlos"</span>]
+
+<span class="kw">for</span> nome <span class="kw2">in</span> nomes:
+    <span class="fl">print</span>(nome)
+
+<span class="cm"># com índice</span>
+<span class="kw">for</span> i, nome <span class="kw2">in</span> <span class="fl">enumerate</span>(nomes):
+    <span class="fl">print</span>(i, nome)</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>✨ List Comprehension</h2>
+      <span class="type-badge" style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:#f97316">list</span>
+    </div>
+    <p>Forma concisa e pythônica de criar listas com uma expressão.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">sintaxe</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># [expressão for item in iterável if condição]</span>
+
+pares     = [x <span class="kw">for</span> x <span class="kw2">in</span> <span class="fl">range</span>(<span class="num">10</span>) <span class="kw">if</span> x % <span class="num">2</span> == <span class="num">0</span>]
+quadrados = [x**<span class="num">2</span> <span class="kw">for</span> x <span class="kw2">in</span> <span class="fl">range</span>(<span class="num">5</span>)]
+maiusculas= [n.<span class="fl">upper</span>() <span class="kw">for</span> n <span class="kw2">in</span> [<span class="st">"ana"</span>, <span class="st">"igor"</span>]]
+
+<span class="fl">print</span>(pares)       <span class="cm"># [0, 2, 4, 6, 8]</span>
+<span class="fl">print</span>(quadrados)   <span class="cm"># [0, 1, 4, 9, 16]</span>
+<span class="fl">print</span>(maiusculas)  <span class="cm"># ['ANA', 'IGOR']</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">vs loop tradicional</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># loop tradicional</span>
+pares = []
+<span class="kw">for</span> x <span class="kw2">in</span> <span class="fl">range</span>(<span class="num">10</span>):
+    <span class="kw">if</span> x % <span class="num">2</span> == <span class="num">0</span>:
+        pares.<span class="fl">append</span>(x)
+
+<span class="cm"># comprehension equivalente</span>
+pares = [x <span class="kw">for</span> x <span class="kw2">in</span> <span class="fl">range</span>(<span class="num">10</span>) <span class="kw">if</span> x % <span class="num">2</span> == <span class="num">0</span>]</code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Dict comprehension também existe: <code>{ k: v for k, v in items.items() }</code>. E set comprehension: <code>{ x**2 for x in nums }</code>.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>🔒 Tuplas (tuple)</h2>
+      <span class="type-badge" style="background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:#a78bfa">tuple</span>
+    </div>
+    <p>Como listas, mas <strong>imutáveis</strong> — uma vez criadas, não podem ser alteradas.</p>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>coordenadas = (<span class="num">10</span>, <span class="num">20</span>)
+cores       = (<span class="st">"vermelho"</span>, <span class="st">"verde"</span>, <span class="st">"azul"</span>)
+unitaria    = (<span class="num">42</span>,)         <span class="cm"># tupla de 1 elemento — vírgula obrigatória</span>
+
+<span class="fl">print</span>(coordenadas[<span class="num">0</span>])     <span class="cm"># 10</span>
+<span class="fl">print</span>(coordenadas[-<span class="num">1</span>])    <span class="cm"># 20</span></code></pre>
+    </div>
+
+    <h3>🔸 Desempacotamento</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>coordenadas = (<span class="num">10</span>, <span class="num">20</span>)
+x, y = coordenadas         <span class="cm"># desempacota</span>
+<span class="fl">print</span>(x, y)                <span class="cm"># 10 20</span>
+
+<span class="cm"># troca de variáveis elegante</span>
+a, b = <span class="num">1</span>, <span class="num">2</span>
+a, b = b, a
+<span class="fl">print</span>(a, b)                <span class="cm"># 2 1</span>
+
+<span class="cm"># desempacotamento com *</span>
+primeiro, *resto = (<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>)
+<span class="fl">print</span>(primeiro, resto)    <span class="cm"># 1 [2, 3, 4]</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">💡</span>
+      <div><strong>Quando usar tupla?</strong> Dados que <em>não devem mudar</em> (coordenadas, cores RGB, configurações), retorno de múltiplos valores em funções, e como chave de dicionário (listas não podem ser chaves).</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>🔵 Conjuntos (set)</h2>
+      <span class="type-badge" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399">set</span>
+    </div>
+    <p><strong>Sem ordem, sem duplicados</strong> — ideal para testes de pertinência e operações matemáticas.</p>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">3</span>, <span class="num">2</span>}   <span class="cm"># duplicados são removidos</span>
+<span class="fl">print</span>(numeros)                   <span class="cm"># {1, 2, 3}</span>
+
+vazio = <span class="fl">set</span>()                   <span class="cm"># ⚠️ {} cria dict, não set!</span></code></pre>
+    </div>
+
+    <h3>🔸 Métodos</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>nums = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}
+
+nums.<span class="fl">add</span>(<span class="num">4</span>)        <span class="cm"># {1, 2, 3, 4}</span>
+nums.<span class="fl">remove</span>(<span class="num">2</span>)    <span class="cm"># {1, 3, 4}  — erro se não existir</span>
+nums.<span class="fl">discard</span>(<span class="num">99</span>)  <span class="cm"># sem erro se não existir</span>
+<span class="fl">print</span>(<span class="num">3</span> <span class="kw2">in</span> nums)   <span class="cm"># True — O(1)!</span></code></pre>
+    </div>
+
+    <h3>🔸 Uso prático: remover duplicados</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>lista = [<span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">2</span>, <span class="num">4</span>]
+sem_duplicados = <span class="fl">list</span>(<span class="fl">set</span>(lista))
+<span class="fl">print</span>(sem_duplicados)   <span class="cm"># [1, 2, 3, 4] (ordem não garantida)</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><code>{}</code> cria um <strong>dicionário vazio</strong>, não um set! Para criar um set vazio use <code>set()</code>.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>🔵 Operações matemáticas com sets</h2>
+      <span class="type-badge" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399">set</span>
+    </div>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}
+b = {<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>}
+
+<span class="fl">print</span>(a <span class="op">|</span> b)    <span class="cm"># União:       {1, 2, 3, 4, 5}</span>
+<span class="fl">print</span>(a <span class="op">&amp;</span> b)    <span class="cm"># Interseção:  {3}</span>
+<span class="fl">print</span>(a <span class="op">-</span> b)    <span class="cm"># Diferença:   {1, 2}</span>
+<span class="fl">print</span>(a <span class="op">^</span> b)    <span class="cm"># Diferença simétrica: {1, 2, 4, 5}</span>
+
+<span class="cm"># ou usando métodos</span>
+a.<span class="fl">union</span>(b)
+a.<span class="fl">intersection</span>(b)
+a.<span class="fl">difference</span>(b)</code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Sets são <strong>muito mais rápidos</strong> que listas para verificar se um elemento existe (<code>in</code>). Para grandes volumes de dados, prefira sets para busca.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>🗂️ Dicionários — criação e acesso</h2>
+      <span class="type-badge" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:#38bdf8">dict</span>
+    </div>
+    <p>Estrutura de <strong>chave → valor</strong>, ordenada (Python 3.7+), mutável.</p>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>pessoa = {
+    <span class="st">"nome"</span>:  <span class="st">"Igor"</span>,
+    <span class="st">"idade"</span>: <span class="num">25</span>,
+    <span class="st">"ativo"</span>: <span class="kw2">True</span>
+}
+
+<span class="cm"># forma alternativa</span>
+pessoa2 = <span class="fl">dict</span>(nome=<span class="st">"Ana"</span>, idade=<span class="num">20</span>)</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">acessando valores</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fl">print</span>(pessoa[<span class="st">"nome"</span>])              <span class="cm"># Igor</span>
+<span class="fl">print</span>(pessoa.<span class="fl">get</span>(<span class="st">"email"</span>))          <span class="cm"># None — sem erro</span>
+<span class="fl">print</span>(pessoa.<span class="fl">get</span>(<span class="st">"email"</span>, <span class="st">"N/A"</span>))  <span class="cm"># N/A — valor padrão</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">modificando e adicionando</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>pessoa[<span class="st">"idade"</span>] = <span class="num">26</span>           <span class="cm"># modifica</span>
+pessoa[<span class="st">"email"</span>] = <span class="st">"igor@email.com"</span>  <span class="cm"># adiciona nova chave</span>
+<span class="kw">del</span> pessoa[<span class="st">"ativo"</span>]             <span class="cm"># remove chave</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>🗂️ Dicionários — métodos e iteração</h2>
+      <span class="type-badge" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:#38bdf8">dict</span>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">métodos principais</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>pessoa = {<span class="st">"nome"</span>: <span class="st">"Igor"</span>, <span class="st">"idade"</span>: <span class="num">25</span>}
+
+<span class="fl">print</span>(pessoa.<span class="fl">keys</span>())    <span class="cm"># dict_keys(['nome', 'idade'])</span>
+<span class="fl">print</span>(pessoa.<span class="fl">values</span>())  <span class="cm"># dict_values(['Igor', 25])</span>
+<span class="fl">print</span>(pessoa.<span class="fl">items</span>())   <span class="cm"># dict_items([('nome','Igor'),('idade',25)])</span>
+
+pessoa.<span class="fl">update</span>({<span class="st">"cidade"</span>: <span class="st">"SP"</span>})  <span class="cm"># adiciona/atualiza vários de uma vez</span>
+pessoa.<span class="fl">pop</span>(<span class="st">"idade"</span>)               <span class="cm"># remove e retorna o valor</span></code></pre>
+    </div>
+
+    <h3>🔸 Percorrendo</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># percorre chaves (padrão)</span>
+<span class="kw">for</span> chave <span class="kw2">in</span> pessoa:
+    <span class="fl">print</span>(chave)
+
+<span class="cm"># percorre chave + valor</span>
+<span class="kw">for</span> chave, valor <span class="kw2">in</span> pessoa.<span class="fl">items</span>():
+    <span class="fl">print</span>(<span class="st">f"{chave}: {valor}"</span>)</code></pre>
+    </div>
+
+    <h3>🔸 Dict Comprehension</h3>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>nomes  = [<span class="st">"Ana"</span>, <span class="st">"Igor"</span>, <span class="st">"Carlos"</span>]
+tamanhos = {nome: <span class="fl">len</span>(nome) <span class="kw">for</span> nome <span class="kw2">in</span> nomes}
+<span class="cm"># {'Ana': 3, 'Igor': 4, 'Carlos': 6}</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>⚙️ Operações úteis com coleções</h2>
+    </div>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>lista = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>]
+
+<span class="fl">print</span>(<span class="fl">len</span>(lista))         <span class="cm"># 6 — tamanho</span>
+<span class="fl">print</span>(<span class="num">4</span> <span class="kw2">in</span> lista)         <span class="cm"># True — pertinência</span>
+<span class="fl">print</span>(<span class="fl">sorted</span>(lista))      <span class="cm"># [1, 1, 3, 4, 5, 9] — nova lista ordenada</span>
+<span class="fl">print</span>(<span class="fl">sorted</span>(lista, reverse=<span class="kw2">True</span>))  <span class="cm"># decrescente</span>
+<span class="fl">print</span>(<span class="fl">sum</span>(lista))         <span class="cm"># 23</span>
+<span class="fl">print</span>(<span class="fl">min</span>(lista))         <span class="cm"># 1</span>
+<span class="fl">print</span>(<span class="fl">max</span>(lista))         <span class="cm"># 9</span>
+
+<span class="cm"># zip — combina iteráveis</span>
+nomes = [<span class="st">"Ana"</span>, <span class="st">"Igor"</span>]
+idades = [<span class="num">20</span>, <span class="num">25</span>]
+juntos = <span class="fl">list</span>(<span class="fl">zip</span>(nomes, idades))
+<span class="cm"># [('Ana', 20), ('Igor', 25)]</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>📋 Copiando coleções</h2>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">⚠️ cópia por referência — ARMADILHA COMUM</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>a = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+b = a              <span class="cm"># b aponta pro MESMO objeto</span>
+b.<span class="fl">append</span>(<span class="num">4</span>)
+<span class="fl">print</span>(a)           <span class="cm"># [1, 2, 3, 4] — a também mudou!</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">cópia rasa (shallow copy)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>b = a.<span class="fl">copy</span>()       <span class="cm"># cópia independente</span>
+b = a[:]           <span class="cm"># também funciona com slice</span>
+b = <span class="fl">list</span>(a)        <span class="cm"># ou via construtor</span>
+
+b.<span class="fl">append</span>(<span class="num">99</span>)
+<span class="fl">print</span>(a)           <span class="cm"># [1, 2, 3] — a não mudou</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">cópia profunda (deep copy) — para aninhadas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">import</span> copy
+
+matriz = [[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]]
+copia  = copy.<span class="fl">deepcopy</span>(matriz)   <span class="cm"># copia listas internas também</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>🗂️ Coleções aninhadas e mistas</h2>
+    </div>
+    <p>Python permite combinar qualquer coleção dentro de outra.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">matriz (lista de listas)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>matriz = [
+    [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>],
+    [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>],
+    [<span class="num">7</span>, <span class="num">8</span>, <span class="num">9</span>]
+]
+
+<span class="fl">print</span>(matriz[<span class="num">0</span>][<span class="num">1</span>])   <span class="cm"># 2  — linha 0, coluna 1</span>
+<span class="fl">print</span>(matriz[<span class="num">2</span>][<span class="num">2</span>])   <span class="cm"># 9  — linha 2, coluna 2</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">lista de dicionários (padrão de APIs)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>usuarios = [
+    {<span class="st">"nome"</span>: <span class="st">"Igor"</span>,   <span class="st">"idade"</span>: <span class="num">25</span>},
+    {<span class="st">"nome"</span>: <span class="st">"Ana"</span>,    <span class="st">"idade"</span>: <span class="num">20</span>},
+    {<span class="st">"nome"</span>: <span class="st">"Carlos"</span>, <span class="st">"idade"</span>: <span class="num">30</span>},
+]
+
+<span class="kw">for</span> u <span class="kw2">in</span> usuarios:
+    <span class="fl">print</span>(u[<span class="st">"nome"</span>], u[<span class="st">"idade"</span>])</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">dicionário com listas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>escola = {
+    <span class="st">"turma_a"</span>: [<span class="st">"Ana"</span>, <span class="st">"Igor"</span>],
+    <span class="st">"turma_b"</span>: [<span class="st">"Carlos"</span>, <span class="st">"Maria"</span>],
+}
+
+escola[<span class="st">"turma_a"</span>].<span class="fl">append</span>(<span class="st">"Pedro"</span>)
+<span class="fl">print</span>(escola[<span class="st">"turma_a"</span>])  <span class="cm"># ['Ana', 'Igor', 'Pedro']</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 12 -->
+  <section class="section" id="s12">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>🚀 Boas práticas + Erros comuns + Exemplo final</h2>
+    </div>
+
+    <p><strong>✔ Boas práticas:</strong></p>
+    <ul>
+      <li>Use <strong><code>list</code></strong> para sequências que mudam</li>
+      <li>Use <strong><code>tuple</code></strong> para dados fixos e retorno de múltiplos valores</li>
+      <li>Use <strong><code>set</code></strong> para remover duplicados ou checar pertinência rápida</li>
+      <li>Use <strong><code>dict</code></strong> para representar dados estruturados (como JSON)</li>
+      <li>Prefira <strong>comprehensions</strong> para criar coleções — mais rápido e legível</li>
+      <li>Use <strong><code>.get()</code></strong> em dicts ao invés de acessar chave diretamente</li>
+    </ul>
+
+    <p><strong>❌ Erros comuns:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># ❌ Acessar chave inexistente</span>
+pessoa[<span class="st">"email"</span>]        <span class="cm"># KeyError</span>
+<span class="cm"># ✅ use .get()</span>
+pessoa.<span class="fl">get</span>(<span class="st">"email"</span>)    <span class="cm"># None — sem erro</span>
+
+<span class="cm"># ❌ Alterar tupla</span>
+t = (<span class="num">1</span>, <span class="num">2</span>)
+t[<span class="num">0</span>] = <span class="num">10</span>              <span class="cm"># TypeError: object does not support item assignment</span>
+
+<span class="cm"># ❌ Confundir set com lista</span>
+{<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}              <span class="cm"># is set, não lista</span>
+[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]              <span class="cm"># lista
+
+# ❌ Cópia por referência</span>
+b = a                  <span class="cm"># mesmo objeto — mudanças em b afetam a</span>
+<span class="cm"># ✅</span>
+b = a.<span class="fl">copy</span>()           <span class="cm"># novo objeto</span></code></pre>
+    </div>
+
+    <p><strong>🎯 Exemplo prático completo:</strong></p>
+    <div class="code-wrap">
+      <div class="code-label">filtrando usuários maiores de 18</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>usuarios = [
+    {<span class="st">"nome"</span>: <span class="st">"Igor"</span>,   <span class="st">"idade"</span>: <span class="num">25</span>},
+    {<span class="st">"nome"</span>: <span class="st">"Ana"</span>,    <span class="st">"idade"</span>: <span class="num">17</span>},
+    {<span class="st">"nome"</span>: <span class="st">"Carlos"</span>, <span class="st">"idade"</span>: <span class="num">30</span>},
+]
+
+<span class="cm"># forma tradicional</span>
+maiores = []
+<span class="kw">for</span> u <span class="kw2">in</span> usuarios:
+    <span class="kw">if</span> u[<span class="st">"idade"</span>] &gt;= <span class="num">18</span>:
+        maiores.<span class="fl">append</span>(u[<span class="st">"nome"</span>])
+
+<span class="cm"># forma pythônica</span>
+maiores = [u[<span class="st">"nome"</span>] <span class="kw">for</span> u <span class="kw2">in</span> usuarios <span class="kw">if</span> u[<span class="st">"idade"</span>] &gt;= <span class="num">18</span>]
+
+<span class="fl">print</span>(maiores)         <span class="cm"># ['Igor', 'Carlos']</span>
+
+<span class="cm"># stats com dict</span>
+stats = {
+    <span class="st">"total"</span>:   <span class="fl">len</span>(usuarios),
+    <span class="st">"maiores"</span>: <span class="fl">len</span>(maiores),
+    <span class="st">"nomes"</span>:   <span class="fl">set</span>(u[<span class="st">"nome"</span>] <span class="kw">for</span> u <span class="kw2">in</span> usuarios)
+}
+<span class="fl">print</span>(stats)</code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Caminho recomendado:</strong> Listas (base de tudo) → Dicionários (APIs) → Sets (duplicados e busca) → Tuplas (conceito específico)</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div><span class="accent">python</span> · <span class="accent2">coleções</span> &nbsp;·&nbsp; tutorial completo</div>
+    <div class="version"><span class="v-dot"></span>do básico ao avançado</div>
+  </footer>
+
+</div>
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('pre');
+    const code = pre.querySelector('code');
+    navigator.clipboard.writeText((code.innerText || code.textContent).trim()).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

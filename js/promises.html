@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript: Promises & Async/Await</title>
+<meta name="description" content="Tutorial completo sobre programação assíncrona em JavaScript — Promises, then/catch, async/await, Promise.all, race e allSettled com exemplos práticos.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ══════════════════════════════════════════════════
+     🎨 THEME CONFIG — JavaScript ⚡
+     --accent:  #F7DF1E  (amarelo JS)
+     --accent2: #9CA3AF  (cinza como segundo tom)
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    --accent:    #F7DF1E;
+    --accent2:   #9CA3AF;
+    --accent3:   #60a5fa;
+    --accent4:   #c084fc;
+    --accent-ok: #4ade80;
+
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  :root {
+    --glow: color-mix(in srgb, var(--accent) 18%, transparent);
+    --glow-sm: color-mix(in srgb, var(--accent) 10%, transparent);
+    --accent-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg: color-mix(in srgb, var(--accent2) 8%, transparent);
+    --accent2-border: color-mix(in srgb, var(--accent2) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(247,223,30,0.07) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #323330, var(--accent), #323330);
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, rgba(156,163,175,0.5) 60%, rgba(156,163,175,0.5) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  .hero-tag .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .hero-tag-gray {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(50,51,48,0.3);
+    border: 1px solid rgba(156,163,175,0.2);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 3px;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 .tool-name {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero h1 .tool-name::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), rgba(156,163,175,0.5));
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .hero h1 .topic-name { color: var(--accent2); }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 520px;
+    font-weight: 300;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-val-gray { color: var(--accent2); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: border-color .2s, color .2s;
+  }
+
+  .badge:hover { border-color: var(--accent-border); color: var(--accent); }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin: 52px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .toc::before {
+    content: 'async function tutorial() { ... }';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    pointer-events: none;
+  }
+
+  .toc h2 {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .toc ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 40px;
+  }
+
+  @media(max-width: 560px) { .toc ol { grid-template-columns: 1fr; } }
+
+  .toc ol li a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+
+  .toc ol li a:hover { color: var(--accent); padding-left: 4px; }
+
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px;
+    scroll-margin-top: 28px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .section.visible { opacity: 1; transform: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), rgba(156,163,175,0.5));
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .section.visible .section-header::before { opacity: 0.5; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .section h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap { position: relative; margin: 20px 0; }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .code-label::before { content: '▸'; opacity: 0.6; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+
+  pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, rgba(156,163,175,0.5) 50%, transparent 100%);
+    opacity: 0.35;
+    border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }
+  .kw  { color: var(--accent); font-weight: 700; }
+  .kw2 { color: var(--accent3); font-weight: 700; }
+  .fl  { color: #f97316; }
+  .st  { color: var(--accent-ok); }
+  .op  { color: var(--accent4); }
+  .num { color: #f472b6; }
+  .fn  { color: #60a5fa; }
+
+  p code, li code {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-border); }
+  .copy-btn.copied { color: var(--accent-ok); opacity: 1; }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex;
+    gap: 13px;
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+
+  .info {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-left: 3px solid var(--accent);
+  }
+
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ CONCEPT CARDS ══ */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), rgba(156,163,175,0.5));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  .concept-card:hover { border-color: var(--accent-border); }
+  .concept-card:hover::before { opacity: 1; }
+
+  .concept-card .cc-icon { font-size: 20px; margin-bottom: 8px; }
+
+  .concept-card code {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .concept-card p { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+  /* ══ TABLE ══ */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--surface); }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+
+  tbody td { padding: 11px 16px; color: var(--text); vertical-align: top; }
+  tbody td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+  }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+  strong { color: var(--text); }
+
+  /* ══ DIVIDER ══ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  footer .accent { color: var(--accent); }
+
+  footer .version { display: flex; align-items: center; gap: 6px; }
+  footer .v-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero { animation: fadeUp .5s ease forwards; }
+  .toc  { animation: fadeUp .5s .12s ease both; }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+  .back-sep { color: var(--border); font-size: 14px; }
+  .back-current { color: var(--accent); }
+
+  /* ══ PROMISE STATE DIAGRAM ══ */
+  .state-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+
+  .state-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    text-align: center;
+    transition: border-color .2s;
+    min-width: 110px;
+  }
+
+  .state-box:hover { border-color: var(--accent-border); }
+
+  .state-box .state-icon { font-size: 22px; margin-bottom: 6px; }
+  .state-box .state-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .state-box .state-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .state-box.pending .state-name { color: var(--accent); }
+  .state-box.fulfilled .state-name { color: var(--accent-ok); }
+  .state-box.rejected .state-name { color: #fb7185; }
+
+  .state-arrow {
+    font-size: 20px;
+    color: var(--muted);
+    padding: 0 8px;
+    line-height: 1;
+  }
+
+  @media(max-width: 520px) {
+    .state-diagram { flex-direction: column; }
+    .state-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Linguagens</span>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">JavaScript</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Promises & Async/Await</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag">
+        <span class="dot"></span>
+        Tutorial Completo
+      </span>
+      <span class="hero-tag-gray">JavaScript ⚡</span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Async</span> em <span class="topic-name">JavaScript</span></h1>
+    <p class="hero-desc">De <code>setTimeout</code> a <code>Promise.all</code> — entenda programação assíncrona de verdade com exemplos práticos e boas práticas.</p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">10</span>
+        <span class="stat-label">Módulos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val stat-val-gray">3</span>
+        <span class="stat-label">Estados Promise</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">ES2017+</span>
+        <span class="stat-label">Versão JS</span>
+      </div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">Promise</span>
+      <span class="badge">then / catch</span>
+      <span class="badge">async / await</span>
+      <span class="badge">try / catch</span>
+      <span class="badge">Promise.all</span>
+      <span class="badge">Promise.race</span>
+      <span class="badge">allSettled</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> Programação assíncrona</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> O que é Promise?</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Estados de uma Promise</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> then / catch / finally</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Encadeamento de Promises</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> async / await</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> try / catch com async</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Promise.all, race e allSettled</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Boas práticas e erros comuns</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Exemplo final completo</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>⏳ Programação assíncrona</h2>
+    </div>
+
+    <p>Em JavaScript, algumas tarefas <strong>demoram para terminar</strong>. O JS não "trava" esperando — ele continua executando e resolve depois.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-icon">🌐</div>
+        <p>Buscar dados de uma API</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">📂</div>
+        <p>Ler arquivo do sistema</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">⏱️</div>
+        <p>Timers e delays</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-icon">🗄️</div>
+        <p>Consultas a banco de dados</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">código síncrono — executa em ordem</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"1"</span>);
+<span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"2"</span>);
+<span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"3"</span>);
+<span class="cm">// 1, 2, 3</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">código assíncrono — setTimeout</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Início"</span>);
+
+<span class="fn">setTimeout</span>(() =&gt; {
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Demorou..."</span>);
+}, <span class="num">2000</span>);
+
+<span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Fim"</span>);</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída — a ordem surpreende!</div>
+      <pre><code><span class="op">Início
+Fim
+Demorou...   ← aparece depois de 2 segundos</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">🧠</span>
+      <div>O JavaScript tem uma <strong>event loop</strong>: tarefas assíncronas vão para uma fila e são executadas assim que o código principal termina. Por isso <strong>"Fim"</strong> aparece antes de <strong>"Demorou..."</strong>.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>🔹 O que é Promise?</h2>
+    </div>
+
+    <p>Uma <strong>Promise</strong> (promessa) é um objeto que representa o resultado de uma operação assíncrona — algo que ainda <em>não aconteceu</em>, mas vai acontecer no futuro.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">estrutura básica</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> minhaPromise = <span class="kw">new</span> <span class="fn">Promise</span>((resolve, reject) =&gt; {
+  <span class="cm">// tarefa assíncrona aqui</span>
+  <span class="cm">// resolve(valor)  → sucesso</span>
+  <span class="cm">// reject(erro)    → falha</span>
+});</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo simples</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> promessa = <span class="kw">new</span> <span class="fn">Promise</span>((resolve, reject) =&gt; {
+  <span class="kw">const</span> sucesso = <span class="kw">true</span>;
+
+  <span class="kw">if</span> (sucesso) {
+    <span class="fn">resolve</span>(<span class="st">"Deu certo! ✔"</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">reject</span>(<span class="st">"Deu erro! ✘"</span>);
+  }
+});</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">consumindo com .then e .catch</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>promessa
+  .<span class="fn">then</span>(res =&gt; <span class="fl">console</span>.<span class="fn">log</span>(res))   <span class="cm">// "Deu certo! ✔"</span>
+  .<span class="fn">catch</span>(err =&gt; <span class="fl">console</span>.<span class="fn">log</span>(err)); <span class="cm">// caso rejeite</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo real — simulando requisição de API</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">function</span> <span class="fn">buscarUsuario</span>() {
+  <span class="kw">return</span> <span class="kw">new</span> <span class="fn">Promise</span>(resolve =&gt; {
+    <span class="fn">setTimeout</span>(() =&gt; {
+      <span class="fn">resolve</span>({ nome: <span class="st">"Igor"</span>, idade: <span class="num">25</span> });
+    }, <span class="num">2000</span>);
+  });
+}
+
+<span class="fn">buscarUsuario</span>().<span class="fn">then</span>(usuario =&gt; {
+  <span class="fl">console</span>.<span class="fn">log</span>(usuario);
+  <span class="cm">// { nome: "Igor", idade: 25 }</span>
+});</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>🔹 Estados de uma Promise</h2>
+    </div>
+
+    <p>Toda Promise passa por um destes 3 estados — e só pode mudar de <strong>pending</strong> para um dos outros dois:</p>
+
+    <div class="state-diagram">
+      <div class="state-box pending">
+        <div class="state-icon">⏳</div>
+        <div class="state-name">pending</div>
+        <div class="state-desc">esperando</div>
+      </div>
+      <div class="state-arrow">→</div>
+      <div class="state-box fulfilled">
+        <div class="state-icon">✅</div>
+        <div class="state-name">fulfilled</div>
+        <div class="state-desc">deu certo</div>
+      </div>
+      <div class="state-arrow">|</div>
+      <div class="state-box rejected">
+        <div class="state-icon">❌</div>
+        <div class="state-name">rejected</div>
+        <div class="state-desc">deu erro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Significado</th>
+            <th>Trigger</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>pending</td>
+            <td>Ainda aguardando resultado</td>
+            <td>Estado inicial</td>
+          </tr>
+          <tr>
+            <td>fulfilled</td>
+            <td>Operação completada com sucesso</td>
+            <td><code>resolve()</code> chamado</td>
+          </tr>
+          <tr>
+            <td>rejected</td>
+            <td>Operação falhou</td>
+            <td><code>reject()</code> chamado</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">📌</span>
+      <div>Uma Promise <strong>imutável após resolvida</strong> — uma vez que vai para <em>fulfilled</em> ou <em>rejected</em>, não pode voltar para <em>pending</em> nem mudar de estado.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>🔹 then / catch / finally</h2>
+    </div>
+
+    <p>Três métodos para <strong>consumir</strong> o resultado de uma Promise:</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <code>.then(cb)</code>
+        <p>Executado quando a Promise é <strong>resolvida</strong> (fulfilled).</p>
+      </div>
+      <div class="concept-card">
+        <code>.catch(cb)</code>
+        <p>Executado quando a Promise é <strong>rejeitada</strong> (rejected).</p>
+      </div>
+      <div class="concept-card">
+        <code>.finally(cb)</code>
+        <p>Executado <strong>sempre</strong>, independente do resultado.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">usando os três métodos</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>minhaPromise
+  .<span class="fn">then</span>(resultado =&gt; {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Sucesso:"</span>, resultado);
+  })
+  .<span class="fn">catch</span>(erro =&gt; {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Erro:"</span>, erro);
+  })
+  .<span class="fn">finally</span>(() =&gt; {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Sempre executa!"</span>);
+  });</code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Use <code>.finally()</code> para limpar estados de loading na UI — ele roda tanto no sucesso quanto no erro.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>🔹 Encadeamento de Promises</h2>
+    </div>
+
+    <p>Cada <code>.then()</code> retorna uma nova Promise, permitindo <strong>encadear</strong> operações assíncronas em sequência — eliminando o famoso "callback hell".</p>
+
+    <div class="code-wrap">
+      <div class="code-label">callback hell — o problema antigo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ❌ difícil de ler e manter</span>
+<span class="fn">fazerA</span>(() =&gt; {
+  <span class="fn">fazerB</span>(() =&gt; {
+    <span class="fn">fazerC</span>(() =&gt; {
+      <span class="fn">fazerD</span>(() =&gt; {
+        <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"fim"</span>); <span class="cm">// pirâmide da morte</span>
+      });
+    });
+  });
+});</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">encadeamento com promises — solução</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ✅ linear e legível</span>
+<span class="fn">fetchDados</span>()
+  .<span class="fn">then</span>(dados =&gt; <span class="fn">processar</span>(dados))
+  .<span class="fn">then</span>(result =&gt; <span class="fn">salvar</span>(result))
+  .<span class="fn">then</span>(final =&gt; <span class="fl">console</span>.<span class="fn">log</span>(final))
+  .<span class="fn">catch</span>(err =&gt; <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Erro:"</span>, err));</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo prático encadeado</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">function</span> <span class="fn">dobrar</span>(n) {
+  <span class="kw">return</span> <span class="fn">Promise</span>.<span class="fn">resolve</span>(n * <span class="num">2</span>);
+}
+
+<span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="num">5</span>)
+  .<span class="fn">then</span>(<span class="fn">dobrar</span>)   <span class="cm">// 10</span>
+  .<span class="fn">then</span>(<span class="fn">dobrar</span>)   <span class="cm">// 20</span>
+  .<span class="fn">then</span>(<span class="fn">dobrar</span>)   <span class="cm">// 40</span>
+  .<span class="fn">then</span>(v =&gt; <span class="fl">console</span>.<span class="fn">log</span>(v)); <span class="cm">// 40</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>🔹 async / await</h2>
+    </div>
+
+    <p>O <code>async/await</code> é <strong>açúcar sintático</strong> sobre Promises — torna o código assíncrono mais legível, parecendo código síncrono normal.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <code>async function</code>
+        <p>Marca uma função como assíncrona. Sempre retorna uma Promise.</p>
+      </div>
+      <div class="concept-card">
+        <code>await</code>
+        <p>Pausa a execução da função até a Promise resolver. Só funciona dentro de <code>async</code>.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">async — função assíncrona</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">async</span> <span class="kw">function</span> <span class="fn">minhaFuncao</span>() {
+  <span class="kw">return</span> <span class="st">"Olá"</span>;
+}
+
+<span class="cm">// equivale a:</span>
+<span class="kw">function</span> <span class="fn">minhaFuncao</span>() {
+  <span class="kw">return</span> <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="st">"Olá"</span>);
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">await — aguarda resultado</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">async</span> <span class="kw">function</span> <span class="fn">executar</span>() {
+  <span class="kw">const</span> resultado = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="st">"Deu certo!"</span>);
+  <span class="fl">console</span>.<span class="fn">log</span>(resultado); <span class="cm">// "Deu certo!"</span>
+}
+
+<span class="fn">executar</span>();</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo com delay real</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">function</span> <span class="fn">esperar</span>(ms) {
+  <span class="kw">return</span> <span class="kw">new</span> <span class="fn">Promise</span>(resolve =&gt; <span class="fn">setTimeout</span>(resolve, ms));
+}
+
+<span class="kw">async</span> <span class="kw">function</span> <span class="fn">processo</span>() {
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Início"</span>);
+
+  <span class="kw">await</span> <span class="fn">esperar</span>(<span class="num">2000</span>);
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Depois de 2s"</span>);
+
+  <span class="kw">await</span> <span class="fn">esperar</span>(<span class="num">1000</span>);
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Depois de mais 1s"</span>);
+
+  <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Fim"</span>);
+}
+
+<span class="fn">processo</span>();</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">Início
+Depois de 2s     ← após 2 segundos
+Depois de mais 1s ← após mais 1 segundo
+Fim</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>🔹 try / catch com async/await</h2>
+    </div>
+
+    <p>Com <code>async/await</code>, trate erros com a estrutura <code>try/catch</code> — muito mais legível que encadear <code>.catch()</code>.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">tratamento de erro correto</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">async</span> <span class="kw">function</span> <span class="fn">buscar</span>() {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> resposta = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="st">"https://api.exemplo.com/dados"</span>);
+    <span class="kw">const</span> dados = <span class="kw">await</span> resposta.<span class="fn">json</span>();
+    <span class="fl">console</span>.<span class="fn">log</span>(dados);
+  } <span class="kw">catch</span> (erro) {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Erro:"</span>, erro);
+  } <span class="kw">finally</span> {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Requisição finalizada."</span>);
+  }
+}</code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bloco</th>
+            <th>Quando executa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>try { }</td>
+            <td>Código que pode lançar erro</td>
+          </tr>
+          <tr>
+            <td>catch (e) { }</td>
+            <td>Quando um erro ocorre no try</td>
+          </tr>
+          <tr>
+            <td>finally { }</td>
+            <td>Sempre, independente de erro ou sucesso</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div><strong>Nunca use <code>await</code> fora de uma função <code>async</code></strong> — causa erro de sintaxe. A exceção é o top-level await em módulos ES2022+.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>🔹 Promise.all, race e allSettled</h2>
+    </div>
+
+    <p>Métodos estáticos para lidar com <strong>múltiplas Promises</strong> ao mesmo tempo:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">Promise.all — aguarda todas (paralelismo)</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">const</span> p1 = <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="num">1</span>);
+<span class="kw">const</span> p2 = <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="num">2</span>);
+<span class="kw">const</span> p3 = <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="num">3</span>);
+
+<span class="fn">Promise</span>.<span class="fn">all</span>([p1, p2, p3]).<span class="fn">then</span>(res =&gt; {
+  <span class="fl">console</span>.<span class="fn">log</span>(res); <span class="cm">// [1, 2, 3]</span>
+});</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">Promise.all com async/await</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">async</span> <span class="kw">function</span> <span class="fn">executar</span>() {
+  <span class="kw">const</span> [user, posts, comments] = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">all</span>([
+    <span class="fn">fetchUser</span>(),
+    <span class="fn">fetchPosts</span>(),
+    <span class="fn">fetchComments</span>()
+  ]);
+
+  <span class="fl">console</span>.<span class="fn">log</span>(user, posts, comments);
+}</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">Promise.race — primeira que termina</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">Promise</span>.<span class="fn">race</span>([
+  <span class="kw">new</span> <span class="fn">Promise</span>(r =&gt; <span class="fn">setTimeout</span>(() =&gt; r(<span class="st">"A"</span>), <span class="num">1000</span>)),
+  <span class="kw">new</span> <span class="fn">Promise</span>(r =&gt; <span class="fn">setTimeout</span>(() =&gt; r(<span class="st">"B"</span>), <span class="num">500</span>))
+]).<span class="fn">then</span>(<span class="fl">console</span>.<span class="fn">log</span>);
+
+<span class="cm">// "B"  (terminou primeiro)</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">Promise.allSettled — todas, com ou sem erro</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="fn">Promise</span>.<span class="fn">allSettled</span>([
+  <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="st">"ok"</span>),
+  <span class="fn">Promise</span>.<span class="fn">reject</span>(<span class="st">"erro"</span>),
+  <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="st">"ok também"</span>)
+]).<span class="fn">then</span>(<span class="fl">console</span>.<span class="fn">log</span>);
+
+<span class="cm">// [</span>
+<span class="cm">//   { status: "fulfilled", value: "ok" },</span>
+<span class="cm">//   { status: "rejected",  reason: "erro" },</span>
+<span class="cm">//   { status: "fulfilled", value: "ok também" }</span>
+<span class="cm">// ]</span></code></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Método</th>
+            <th>O que faz</th>
+            <th>Se uma falhar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Promise.all</td>
+            <td>Aguarda todas terminarem</td>
+            <td>Rejeita imediatamente</td>
+          </tr>
+          <tr>
+            <td>Promise.race</td>
+            <td>Retorna a primeira que terminar</td>
+            <td>Rejeita se a primeira falhar</td>
+          </tr>
+          <tr>
+            <td>Promise.allSettled</td>
+            <td>Aguarda todas, mostra status individual</td>
+            <td>Nunca rejeita — sempre retorna tudo</td>
+          </tr>
+          <tr>
+            <td>Promise.any</td>
+            <td>Retorna a primeira que <em>resolver</em></td>
+            <td>Ignora rejeições</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">⚡</span>
+      <div>Use <code>Promise.all</code> para paralelizar requisições independentes — executa tudo ao mesmo tempo e espera o mais lento, muito mais rápido que <code>await</code> sequencial.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>🔹 Boas práticas e erros comuns</h2>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <code>async/await &gt; .then()</code>
+        <p>Prefira async/await — mais legível e menos aninhado.</p>
+      </div>
+      <div class="concept-card">
+        <code>try/catch sempre</code>
+        <p>Sempre trate erros em funções async — sem catch silencioso.</p>
+      </div>
+      <div class="concept-card">
+        <code>Promise.all para paralelo</code>
+        <p>Não use await em série quando as tarefas são independentes.</p>
+      </div>
+      <div class="concept-card">
+        <code>Não misture estilos</code>
+        <p>Evite misturar .then() com await no mesmo bloco.</p>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">❌ erros comuns</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ❌ esqueceu o await — dados é uma Promise, não o resultado!</span>
+<span class="kw">const</span> dados = <span class="fn">fetchDados</span>();
+<span class="fl">console</span>.<span class="fn">log</span>(dados); <span class="cm">// Promise { &lt;pending&gt; }</span>
+
+<span class="cm">// ❌ sem tratamento de erro</span>
+<span class="kw">async</span> <span class="kw">function</span> <span class="fn">f</span>() {
+  <span class="kw">const</span> dados = <span class="kw">await</span> <span class="fn">fetchDados</span>(); <span class="cm">// pode explodir silenciosamente</span>
+}
+
+<span class="cm">// ❌ await em série desnecessário (lento!)</span>
+<span class="kw">const</span> user  = <span class="kw">await</span> <span class="fn">fetchUser</span>();   <span class="cm">// espera 1s</span>
+<span class="kw">const</span> posts = <span class="kw">await</span> <span class="fn">fetchPosts</span>();  <span class="cm">// espera mais 1s</span>
+<span class="cm">// total: 2s! Use Promise.all (seria 1s)</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">✅ boas práticas</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// ✅ sempre await quando precisar do valor</span>
+<span class="kw">const</span> dados = <span class="kw">await</span> <span class="fn">fetchDados</span>();
+
+<span class="cm">// ✅ sempre try/catch</span>
+<span class="kw">try</span> {
+  <span class="kw">const</span> dados = <span class="kw">await</span> <span class="fn">fetchDados</span>();
+} <span class="kw">catch</span> (err) {
+  <span class="fl">console</span>.<span class="fn">log</span>(err);
+}
+
+<span class="cm">// ✅ Promise.all para operações independentes</span>
+<span class="kw">const</span> [user, posts] = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">all</span>([
+  <span class="fn">fetchUser</span>(),
+  <span class="fn">fetchPosts</span>()
+]);</code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>🔹 Exemplo final completo</h2>
+    </div>
+
+    <p>Um cenário realista: buscar usuário, buscar posts em paralelo e exibir tudo com tratamento de erro:</p>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo completo — realista</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm">// Simula requisições assíncronas</span>
+<span class="kw">function</span> <span class="fn">buscarUsuario</span>() {
+  <span class="kw">return</span> <span class="kw">new</span> <span class="fn">Promise</span>(resolve =&gt; {
+    <span class="fn">setTimeout</span>(() =&gt; <span class="fn">resolve</span>({ id: <span class="num">1</span>, nome: <span class="st">"Igor"</span> }), <span class="num">1500</span>);
+  });
+}
+
+<span class="kw">function</span> <span class="fn">buscarPosts</span>(userId) {
+  <span class="kw">return</span> <span class="kw">new</span> <span class="fn">Promise</span>(resolve =&gt; {
+    <span class="fn">setTimeout</span>(() =&gt; <span class="fn">resolve</span>([<span class="st">"Post 1"</span>, <span class="st">"Post 2"</span>]), <span class="num">1000</span>);
+  });
+}
+
+<span class="cm">// Função principal</span>
+<span class="kw">async</span> <span class="kw">function</span> <span class="fn">main</span>() {
+  <span class="kw">try</span> {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Buscando dados..."</span>);
+
+    <span class="cm">// Busca usuário e posts em paralelo!</span>
+    <span class="kw">const</span> [usuario, posts] = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">all</span>([
+      <span class="fn">buscarUsuario</span>(),
+      <span class="fn">buscarPosts</span>(<span class="num">1</span>)
+    ]);
+
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Usuário:"</span>, usuario.nome);
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Posts:"</span>, posts);
+
+  } <span class="kw">catch</span> (err) {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Erro:"</span>, err);
+  } <span class="kw">finally</span> {
+    <span class="fl">console</span>.<span class="fn">log</span>(<span class="st">"Finalizado!"</span>);
+  }
+}
+
+<span class="fn">main</span>();</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">Buscando dados...
+Usuário: Igor          ← após ~1.5s (paralelo, não 2.5s!)
+Posts: ["Post 1", "Post 2"]
+Finalizado!</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">resumo mental</div>
+      <pre><code><span class="cm">// Promise     → objeto que resolve no futuro</span>
+<span class="cm">// then/catch  → forma "clássica" de consumir</span>
+<span class="cm">// async       → função que retorna Promise</span>
+<span class="cm">// await       → pausa e aguarda a Promise</span>
+<span class="cm">// try/catch   → trata erros com async/await</span>
+<span class="cm">// Promise.all → paralelo — mais rápido!</span>
+<span class="cm">// Promise.race → vence o primeiro</span>
+<span class="cm">// allSettled  → retorna todos, com status</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Caminho recomendado:</strong> entenda <code>setTimeout</code> → crie Promises → use <code>then/catch</code> → migre para <code>async/await</code> → domine <code>Promise.all</code> → integre com <code>fetch</code> em APIs reais.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div>
+      <span class="accent">dev</span> tutoriais &nbsp;·&nbsp; JavaScript
+    </div>
+    <div class="version">
+      <span class="v-dot"></span>
+      <span class="accent">⚡</span> ES2017+
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  /* ── copy button ── */
+  function copyCode(btn) {
+    const code = btn.nextElementSibling;
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copiar';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+
+  /* ── intersection observer (fade-in sections) ── */
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08 }
+  );
+  document.querySelectorAll('.section').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

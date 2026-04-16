@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python: Funções</title>
+<meta name="description" content="Tutorial completo de funções em Python — def, return, *args, **kwargs, lambda, closures, decorators e boas práticas.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --accent:    #FFD343;
+    --accent2:   #3776AB;
+    --accent3:   #60a5fa;
+    --accent4:   #c084fc;
+    --accent-ok: #4ade80;
+    --bg:       #0e0f0f;
+    --surface:  #161818;
+    --surface2: #1d1f1f;
+    --border:   #2a2d2d;
+    --text:     #e2e0dd;
+    --muted:    #5a5856;
+    --code-bg:  #0a0b0b;
+  }
+
+  :root {
+    --accent-bg:     color-mix(in srgb, var(--accent)  8%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent) 30%, transparent);
+    --accent2-bg:    color-mix(in srgb, var(--accent2)  8%, transparent);
+    --accent2-border:color-mix(in srgb, var(--accent2) 30%, transparent);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,211,67,0.07) 1px, transparent 0);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent2));
+    z-index: 10;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══ BACK NAV ══ */
+  .back-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .back-link:hover { color: var(--accent); }
+  .back-sep     { color: var(--border); font-size: 14px; }
+  .back-current { color: var(--accent); }
+
+  /* ══ HERO ══ */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp .5s ease forwards;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -40px; bottom: 0;
+    width: 380px;
+    background-image:
+      linear-gradient(180deg, transparent 0%, transparent 40%, var(--accent) 40%, var(--accent) 41%, transparent 41%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, var(--accent2) 60%, var(--accent2) 61%, transparent 61%);
+    background-size: 60px 100%;
+    background-position: 0 0, 60px 0;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 3px;
+  }
+  .hero-tag .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); animation: blink 2s ease-in-out infinite;
+  }
+  .hero-tag-blue {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--accent2-bg); border: 1px solid var(--accent2-border);
+    color: var(--accent2); font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 3px;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.03em; margin-bottom: 18px;
+  }
+  .hero h1 .tool-name {
+    color: var(--accent); position: relative; display: inline-block;
+  }
+  .hero h1 .tool-name::after {
+    content: ''; position: absolute;
+    bottom: -4px; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px; opacity: 0.6;
+  }
+  .hero h1 .topic-name { color: var(--accent2); }
+
+  .hero-desc {
+    color: var(--muted); font-size: 16px; max-width: 480px;
+    font-weight: 300; margin-bottom: 28px; line-height: 1.6;
+  }
+
+  .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-val-blue { color: var(--accent2); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .hero-badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 4px 11px; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted);
+    background: var(--surface); transition: border-color .2s, color .2s;
+  }
+  .badge:hover { border-color: var(--accent-border); color: var(--accent); }
+
+  /* ══ TOC ══ */
+  .toc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 4px;
+    padding: 28px 32px; margin: 52px 0;
+    position: relative; overflow: hidden;
+    animation: fadeUp .5s .12s ease both;
+  }
+  .toc::before {
+    content: '>>> def tutorial(): ...';
+    position: absolute; top: 14px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--border); pointer-events: none;
+  }
+  .toc h2 {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--accent); margin-bottom: 20px;
+  }
+  .toc ol {
+    list-style: none; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 8px 40px;
+  }
+  @media(max-width:560px){ .toc ol { grid-template-columns: 1fr; } }
+  .toc ol li a {
+    color: var(--text); text-decoration: none; font-size: 13.5px;
+    display: flex; align-items: center; gap: 10px;
+    transition: color .2s, padding-left .2s;
+  }
+  .toc ol li a:hover { color: var(--accent); padding-left: 4px; }
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--accent); opacity: 0.6; min-width: 24px;
+  }
+
+  /* ══ SECTIONS ══ */
+  .section {
+    margin-top: 68px; scroll-margin-top: 28px;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .section.visible { opacity: 1; transform: none; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border); position: relative;
+  }
+  .section-header::before {
+    content: ''; position: absolute;
+    left: -24px; top: 0; bottom: 16px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity .3s;
+  }
+  .section.visible .section-header::before { opacity: 0.5; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--accent); background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 3px 10px; border-radius: 3px; flex-shrink: 0;
+  }
+  .section h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* ══ CODE BLOCKS ══ */
+  .code-wrap { position: relative; margin: 20px 0; }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--accent); opacity: 0.6; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .code-label::before { content: '▸'; opacity: 0.6; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 20px 22px;
+    overflow-x: auto; position: relative;
+  }
+  pre:hover { border-color: color-mix(in srgb, var(--accent) 20%, var(--border)); }
+  pre:hover .copy-btn { opacity: 1; }
+  pre::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, transparent 100%);
+    opacity: 0.35; border-radius: 6px 6px 0 0;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.8; color: #c9d4d0;
+  }
+
+  /* syntax highlights */
+  .cm  { color: var(--muted); font-style: italic; }
+  .kw  { color: var(--accent); font-weight: 700; }
+  .kw2 { color: var(--accent2); font-weight: 700; }
+  .fl  { color: #f97316; }
+  .st  { color: var(--accent-ok); }
+  .op  { color: var(--accent4); }
+  .num { color: #f472b6; }
+  .dec { color: #38bdf8; }
+
+  p code, li code {
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: 3px; padding: 1px 7px;
+    font-size: 12.5px; color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 4px 10px; border-radius: 3px;
+    cursor: pointer; opacity: 0;
+    transition: opacity .2s, color .2s, border-color .2s;
+    letter-spacing: 0.05em;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-border); }
+  .copy-btn.copied { color: var(--accent-ok); opacity: 1; }
+
+  /* ══ CALLOUTS ══ */
+  .tip, .warn, .info {
+    display: flex; gap: 13px; border-radius: 4px;
+    padding: 15px 18px; margin: 20px 0;
+    font-size: 14px; line-height: 1.6;
+  }
+  .tip {
+    background: color-mix(in srgb, var(--accent-ok) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-ok) 20%, transparent);
+    border-left: 3px solid var(--accent-ok);
+  }
+  .warn {
+    background: rgba(251,113,133,.05);
+    border: 1px solid rgba(251,113,133,.18);
+    border-left: 3px solid #fb7185;
+  }
+  .info {
+    background: var(--accent2-bg);
+    border: 1px solid var(--accent2-border);
+    border-left: 3px solid var(--accent2);
+  }
+  .tip-icon, .warn-icon, .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ══ CONCEPT CARDS ══ */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px; margin: 20px 0;
+  }
+  .concept-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 16px;
+    transition: border-color .2s; position: relative; overflow: hidden;
+  }
+  .concept-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity .2s;
+  }
+  .concept-card:hover { border-color: var(--accent-border); }
+  .concept-card:hover::before { opacity: 1; }
+  .concept-card code { display: block; margin-bottom: 6px; color: var(--accent); font-size: 12px; font-weight: 700; }
+  .concept-card p { font-size: 12px; color: var(--muted); margin: 0; }
+
+  /* ══ TABLE ══ */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 6px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: var(--surface); }
+  thead th {
+    padding: 12px 16px; text-align: left;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  tbody td { padding: 11px 16px; color: var(--text); vertical-align: top; }
+  tbody td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--accent); }
+
+  /* ══ PROSE ══ */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 12px 0 18px; }
+  li { margin-bottom: 8px; font-size: 14.5px; }
+  li strong { color: var(--accent); font-weight: 600; }
+  strong { color: var(--text); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 60px 0;
+  }
+
+  /* ══ FOOTER ══ */
+  footer {
+    margin-top: 60px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap; gap: 10px;
+  }
+  footer .accent  { color: var(--accent); }
+  footer .accent2 { color: var(--accent2); }
+  footer .version { display: flex; align-items: center; gap: 6px; }
+  footer .v-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+
+  /* ══ ANIMATIONS ══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- BACK NAV -->
+  <nav class="back-nav">
+    <a class="back-link" href="../index.html">← Tutoriais</a>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Linguagens</span>
+    <span class="back-sep">/</span>
+    <span style="color:var(--muted)">Python</span>
+    <span class="back-sep">/</span>
+    <span class="back-current">Funções</span>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-tag"><span class="dot"></span>Tutorial Completo</span>
+      <span class="hero-tag-blue">Python 🐍</span>
+    </div>
+    <h1>Dominando<br><span class="tool-name">Funções</span> em <span class="topic-name">Python</span></h1>
+    <p class="hero-desc">De <code>def</code> básico a decorators — tudo sobre funções com exemplos reais e boas práticas.</p>
+
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">12</span><span class="stat-label">Módulos</span></div>
+      <div class="stat"><span class="stat-val stat-val-blue">5</span><span class="stat-label">Tipos de param.</span></div>
+      <div class="stat"><span class="stat-val">3.x</span><span class="stat-label">Versão Python</span></div>
+    </div>
+
+    <div class="hero-badge-row">
+      <span class="badge">def / return</span>
+      <span class="badge">*args / **kwargs</span>
+      <span class="badge">lambda</span>
+      <span class="badge">closures</span>
+      <span class="badge">decorators</span>
+      <span class="badge">type hints</span>
+      <span class="badge">recursão</span>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>// Índice</h2>
+    <ol>
+      <li><a href="#s1"><span class="toc-num">01</span> O que são funções?</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Estrutura e parâmetros</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Tipos de parâmetros</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Retorno de valores</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> Escopo de variáveis</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Funções lambda</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Funções como objetos</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Funções dentro de funções</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Closures</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Decorators</a></li>
+      <li><a href="#s11"><span class="toc-num">11</span> Type hints e docstrings</a></li>
+      <li><a href="#s12"><span class="toc-num">12</span> Recursão + Erros + Exemplo final</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <section class="section" id="s1">
+    <div class="section-header"><span class="section-num">01</span><h2>🔧 O que são funções?</h2></div>
+    <p>Funções são <strong>blocos de código reutilizáveis</strong> que executam uma tarefa específica. Em vez de repetir código, você cria uma função e reutiliza.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo simples</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">saudacao</span>():
+    <span class="fl">print</span>(<span class="st">"Olá!"</span>)
+
+saudacao()   <span class="cm"># chama a função</span></code></pre>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card"><code>def</code><p>Palavra-chave que define uma função</p></div>
+      <div class="concept-card"><code>return</code><p>Devolve um valor ao chamador</p></div>
+      <div class="concept-card"><code>parâmetro</code><p>Variável declarada na função</p></div>
+      <div class="concept-card"><code>argumento</code><p>Valor passado ao chamar a função</p></div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="section" id="s2">
+    <div class="section-header"><span class="section-num">02</span><h2>🧱 Estrutura de uma função</h2></div>
+
+    <div class="code-wrap">
+      <div class="code-label">anatomia</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">nome_da_funcao</span>(parametros):
+    <span class="cm"># código</span>
+    <span class="kw">return</span> resultado</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">exemplo completo</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">somar</span>(a, b):     <span class="cm"># a, b são parâmetros</span>
+    <span class="kw">return</span> a + b
+
+resultado = <span class="fl">somar</span>(<span class="num">2</span>, <span class="num">3</span>)   <span class="cm"># 2, 3 são argumentos</span>
+<span class="fl">print</span>(resultado)              <span class="cm"># 5</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="section" id="s3">
+    <div class="section-header"><span class="section-num">03</span><h2>🔹 Tipos de parâmetros</h2></div>
+
+    <p><strong>1. Parâmetros obrigatórios:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">saudacao</span>(nome):
+    <span class="fl">print</span>(<span class="st">f"Olá {nome}"</span>)
+
+<span class="fl">saudacao</span>(<span class="st">"Igor"</span>)    <span class="cm"># obrigatório passar o argumento</span></code></pre>
+    </div>
+
+    <p><strong>2. Parâmetros com valor padrão (default):</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">saudacao</span>(nome=<span class="st">"Visitante"</span>):
+    <span class="fl">print</span>(<span class="st">f"Olá {nome}"</span>)
+
+<span class="fl">saudacao</span>()             <span class="cm"># Olá Visitante</span>
+<span class="fl">saudacao</span>(<span class="st">"Igor"</span>)      <span class="cm"># Olá Igor</span></code></pre>
+    </div>
+
+    <p><strong>3. Argumentos nomeados (keyword args):</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">pessoa</span>(nome, idade):
+    <span class="fl">print</span>(nome, idade)
+
+<span class="fl">pessoa</span>(idade=<span class="num">25</span>, nome=<span class="st">"Igor"</span>)   <span class="cm"># ordem não importa</span></code></pre>
+    </div>
+
+    <p><strong>4. <code>*args</code> — vários argumentos posicionais:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">soma</span>(*numeros):             <span class="cm"># recebe qualquer qtd</span>
+    <span class="kw">return</span> <span class="fl">sum</span>(numeros)
+
+<span class="fl">print</span>(<span class="fl">soma</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>))        <span class="cm"># 10</span>
+<span class="fl">print</span>(<span class="fl">soma</span>(<span class="num">10</span>, <span class="num">20</span>))              <span class="cm"># 30</span></code></pre>
+    </div>
+
+    <p><strong>5. <code>**kwargs</code> — vários argumentos nomeados:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">mostrar_dados</span>(**dados):
+    <span class="kw">for</span> chave, valor <span class="kw2">in</span> dados.<span class="fl">items</span>():
+        <span class="fl">print</span>(chave, valor)
+
+<span class="fl">mostrar_dados</span>(nome=<span class="st">"Igor"</span>, idade=<span class="num">25</span>, cidade=<span class="st">"SP"</span>)</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">nome Igor
+idade 25
+cidade SP</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Ordem correta dos parâmetros: <strong>obrigatórios → default → *args → **kwargs</strong>. Misturar errado causa <code>SyntaxError</code>.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="section" id="s4">
+    <div class="section-header"><span class="section-num">04</span><h2>🔹 Retorno de valores</h2></div>
+
+    <p><strong>Com <code>return</code>:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">soma</span>(a, b):
+    <span class="kw">return</span> a + b
+
+resultado = <span class="fl">soma</span>(<span class="num">3</span>, <span class="num">4</span>)
+<span class="fl">print</span>(resultado)   <span class="cm"># 7</span></code></pre>
+    </div>
+
+    <p><strong>Sem <code>return</code> → retorna <code>None</code>:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">teste</span>():
+    <span class="fl">print</span>(<span class="st">"oi"</span>)
+
+<span class="fl">print</span>(<span class="fl">teste</span>())   <span class="cm"># oi</span>
+                 <span class="cm"># None</span></code></pre>
+    </div>
+
+    <p><strong>Retornando múltiplos valores:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">operacoes</span>(a, b):
+    <span class="kw">return</span> a + b, a * b    <span class="cm"># retorna uma tupla</span>
+
+soma, mult = <span class="fl">operacoes</span>(<span class="num">2</span>, <span class="num">3</span>)
+<span class="fl">print</span>(soma, mult)          <span class="cm"># 5 6</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">💡</span>
+      <div>Prefira sempre <strong><code>return</code></strong> ao invés de <code>print</code> dentro de funções. Funções com <code>return</code> são reutilizáveis e testáveis; com <code>print</code>, não.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="section" id="s5">
+    <div class="section-header"><span class="section-num">05</span><h2>🔹 Escopo de variáveis</h2></div>
+
+    <p><strong>Variável local</strong> — existe apenas dentro da função:</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">teste</span>():
+    x = <span class="num">10</span>               <span class="cm"># local</span>
+    <span class="fl">print</span>(x)
+
+<span class="fl">teste</span>()
+<span class="cm"># print(x)           # ❌ NameError — x não existe aqui</span></code></pre>
+    </div>
+
+    <p><strong>Variável global</strong> — acessível dentro de qualquer função:</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>x = <span class="num">5</span>                   <span class="cm"># global</span>
+
+<span class="kw">def</span> <span class="fl">teste</span>():
+    <span class="fl">print</span>(x)             <span class="cm"># lê global — ok</span>
+
+<span class="fl">teste</span>()                  <span class="cm"># 5</span></code></pre>
+    </div>
+
+    <p><strong>Modificando uma variável global:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>x = <span class="num">5</span>
+
+<span class="kw">def</span> <span class="fl">alterar</span>():
+    <span class="kw">global</span> x            <span class="cm"># declara intenção de modificar global</span>
+    x = <span class="num">10</span>
+
+<span class="fl">alterar</span>()
+<span class="fl">print</span>(x)               <span class="cm"># 10</span></code></pre>
+    </div>
+
+    <div class="warn">
+      <span class="warn-icon">⚠️</span>
+      <div>Evite usar <code>global</code> sempre que possível. Ele dificulta a leitura e testes. Prefira passar o valor como parâmetro e retornar o resultado.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="section" id="s6">
+    <div class="section-header"><span class="section-num">06</span><h2>🔹 Funções lambda (anônimas)</h2></div>
+    <p>Funções <strong>curtas de uma linha</strong>, sem nome, ideais para uso imediato.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">sintaxe</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># lambda parâmetros: expressão</span>
+
+dobro = <span class="kw">lambda</span> x: x * <span class="num">2</span>
+<span class="fl">print</span>(dobro(<span class="num">5</span>))   <span class="cm"># 10</span>
+
+<span class="cm"># equivale a:</span>
+<span class="kw">def</span> <span class="fl">dobro</span>(x):
+    <span class="kw">return</span> x * <span class="num">2</span></code></pre>
+    </div>
+
+    <p><strong>Usando com <code>map</code>:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]
+
+dobrados = <span class="fl">list</span>(<span class="fl">map</span>(<span class="kw">lambda</span> x: x * <span class="num">2</span>, numeros))
+<span class="fl">print</span>(dobrados)   <span class="cm"># [2, 4, 6, 8]</span></code></pre>
+    </div>
+
+    <p><strong>Usando com <code>filter</code>:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>numeros = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]
+
+pares = <span class="fl">list</span>(<span class="fl">filter</span>(<span class="kw">lambda</span> x: x % <span class="num">2</span> == <span class="num">0</span>, numeros))
+<span class="fl">print</span>(pares)      <span class="cm"># [2, 4, 6]</span></code></pre>
+    </div>
+
+    <p><strong>Usando com <code>sorted</code>:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>pessoas = [(<span class="st">"Igor"</span>, <span class="num">25</span>), (<span class="st">"Ana"</span>, <span class="num">20</span>), (<span class="st">"João"</span>, <span class="num">30</span>)]
+
+ordenado = <span class="fl">sorted</span>(pessoas, key=<span class="kw">lambda</span> p: p[<span class="num">1</span>])
+<span class="fl">print</span>(ordenado)
+<span class="cm"># [('Ana', 20), ('Igor', 25), ('João', 30)]</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="section" id="s7">
+    <div class="section-header"><span class="section-num">07</span><h2>🔹 Funções como objetos</h2></div>
+    <p>Em Python, funções são <strong>cidadãos de primeira classe</strong> — você pode passá-las, retorná-las e guardá-las em variáveis.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">passando função como argumento</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">executar</span>(func):
+    func()
+
+<span class="kw">def</span> <span class="fl">ola</span>():
+    <span class="fl">print</span>(<span class="st">"Olá!"</span>)
+
+<span class="fl">executar</span>(ola)    <span class="cm"># Olá!</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">guardando função em variável</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code>minha_func = <span class="fl">print</span>       <span class="cm"># sem parênteses = referência</span>
+minha_func(<span class="st">"Olá!"</span>)       <span class="cm"># Olá!</span></code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">lista de funções</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">dobrar</span>(x): <span class="kw">return</span> x * <span class="num">2</span>
+<span class="kw">def</span> <span class="fl">triplicar</span>(x): <span class="kw">return</span> x * <span class="num">3</span>
+
+operacoes = [dobrar, triplicar]
+
+<span class="kw">for</span> op <span class="kw2">in</span> operacoes:
+    <span class="fl">print</span>(op(<span class="num">5</span>))   <span class="cm"># 10, 15</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section class="section" id="s8">
+    <div class="section-header"><span class="section-num">08</span><h2>🔹 Funções dentro de funções</h2></div>
+    <p>Você pode definir funções <strong>dentro de outras funções</strong> — útil para organizar lógica interna.</p>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">externa</span>():
+    <span class="kw">def</span> <span class="fl">interna</span>():
+        <span class="fl">print</span>(<span class="st">"Dentro da função interna"</span>)
+
+    <span class="fl">interna</span>()                      <span class="cm"># chamada dentro da externa</span>
+    <span class="fl">print</span>(<span class="st">"Dentro da função externa"</span>)
+
+<span class="fl">externa</span>()</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">Dentro da função interna
+Dentro da função externa</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">💡</span>
+      <div>A função <code>interna</code> só existe <strong>dentro</strong> de <code>externa</code> — ela não pode ser chamada de fora. Isso é a base para closures e decorators.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section class="section" id="s9">
+    <div class="section-header"><span class="section-num">09</span><h2>🔹 Closures</h2></div>
+    <p>Uma closure é uma função que <strong>"lembra"</strong> o contexto do seu ambiente externo, mesmo após a função externa ter terminado.</p>
+
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">multiplicador</span>(x):
+    <span class="kw">def</span> <span class="fl">multiplicar</span>(y):
+        <span class="kw">return</span> x * y        <span class="cm"># lembra o x do contexto externo</span>
+    <span class="kw">return</span> multiplicar
+
+dobro    = <span class="fl">multiplicador</span>(<span class="num">2</span>)
+triplo   = <span class="fl">multiplicador</span>(<span class="num">3</span>)
+
+<span class="fl">print</span>(dobro(<span class="num">5</span>))    <span class="cm"># 10</span>
+<span class="fl">print</span>(triplo(<span class="num">5</span>))   <span class="cm"># 15</span></code></pre>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Closures são muito usadas para <strong>criar factories de funções</strong> — funções que geram outras funções customizadas. São a base dos decorators.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section class="section" id="s10">
+    <div class="section-header"><span class="section-num">10</span><h2>🔹 Decorators</h2></div>
+    <p>Decorators <strong>modificam ou estendem</strong> o comportamento de funções sem alterar o código original.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">decorator básico</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">log</span>(func):
+    <span class="kw">def</span> <span class="fl">wrapper</span>(*args, **kwargs):
+        <span class="fl">print</span>(<span class="st">f"Executando: {func.__name__}"</span>)
+        resultado = func(*args, **kwargs)
+        <span class="fl">print</span>(<span class="st">"Concluído!"</span>)
+        <span class="kw">return</span> resultado
+    <span class="kw">return</span> wrapper
+
+<span class="dec">@log</span>                         <span class="cm"># aplica o decorator</span>
+<span class="kw">def</span> <span class="fl">somar</span>(a, b):
+    <span class="kw">return</span> a + b
+
+<span class="fl">somar</span>(<span class="num">2</span>, <span class="num">3</span>)</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-label">saída</div>
+      <pre><code><span class="op">Executando: somar
+Concluído!</span></code></pre>
+    </div>
+
+    <p><strong>Decorator com argumentos:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">repetir</span>(n):
+    <span class="kw">def</span> <span class="fl">decorator</span>(func):
+        <span class="kw">def</span> <span class="fl">wrapper</span>(*args, **kwargs):
+            <span class="kw">for</span> _ <span class="kw2">in</span> <span class="fl">range</span>(n):
+                func(*args, **kwargs)
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="dec">@repetir</span>(<span class="num">3</span>)
+<span class="kw">def</span> <span class="fl">ola</span>():
+    <span class="fl">print</span>(<span class="st">"Olá!"</span>)
+
+<span class="fl">ola</span>()   <span class="cm"># Olá! (3 vezes)</span></code></pre>
+    </div>
+
+    <div class="info">
+      <span class="info-icon">🧠</span>
+      <div><code>@log</code> é açúcar sintático para <code>somar = log(somar)</code>. Decorators são muito usados em frameworks como Flask e FastAPI para autenticação, rotas e validação.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section class="section" id="s11">
+    <div class="section-header"><span class="section-num">11</span><h2>🔹 Type hints e docstrings</h2></div>
+
+    <p><strong>Type hints</strong> — documentam os tipos esperados (não enforce em runtime):</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">soma</span>(a: <span class="fl">int</span>, b: <span class="fl">int</span>) -> <span class="fl">int</span>:
+    <span class="kw">return</span> a + b
+
+<span class="kw">def</span> <span class="fl">saudacao</span>(nome: <span class="fl">str</span> = <span class="st">"Visitante"</span>) -> <span class="kw2">None</span>:
+    <span class="fl">print</span>(<span class="st">f"Olá {nome}"</span>)
+
+<span class="kw">def</span> <span class="fl">dividir</span>(a: <span class="fl">float</span>, b: <span class="fl">float</span>) -> <span class="fl">float</span> | <span class="kw2">None</span>:
+    <span class="kw">return</span> a / b <span class="kw">if</span> b != <span class="num">0</span> <span class="kw">else</span> <span class="kw2">None</span></code></pre>
+    </div>
+
+    <p><strong>Docstrings</strong> — documentam o que a função faz:</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">soma</span>(a: <span class="fl">int</span>, b: <span class="fl">int</span>) -> <span class="fl">int</span>:
+    <span class="st">"""
+    Soma dois números inteiros.
+
+    Args:
+        a: Primeiro número.
+        b: Segundo número.
+
+    Returns:
+        A soma de a e b.
+    """</span>
+    <span class="kw">return</span> a + b
+
+<span class="fl">print</span>(<span class="fl">soma</span>.__doc__)    <span class="cm"># acessa a docstring</span>
+<span class="fl">help</span>(<span class="fl">soma</span>)              <span class="cm"># exibe documentação formatada</span></code></pre>
+    </div>
+  </section>
+
+  <!-- SECTION 12 -->
+  <section class="section" id="s12">
+    <div class="section-header"><span class="section-num">12</span><h2>🚀 Recursão + Erros comuns + Exemplo final</h2></div>
+
+    <p><strong>Recursão</strong> — função que chama ela mesma:</p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">fatorial</span>(n: <span class="fl">int</span>) -> <span class="fl">int</span>:
+    <span class="kw">if</span> n == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="num">1</span>                    <span class="cm"># caso base</span>
+    <span class="kw">return</span> n * <span class="fl">fatorial</span>(n - <span class="num">1</span>)   <span class="cm"># chamada recursiva</span>
+
+<span class="fl">print</span>(<span class="fl">fatorial</span>(<span class="num">5</span>))   <span class="cm"># 120  →  5 * 4 * 3 * 2 * 1</span></code></pre>
+    </div>
+
+    <p><strong>❌ Erros comuns:</strong></p>
+    <div class="code-wrap">
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="cm"># ❌ Esquecer return</span>
+<span class="kw">def</span> <span class="fl">soma</span>(a, b):
+    a + b                  <span class="cm"># não retorna nada → None</span>
+
+<span class="cm"># ❌ Ordem errada de parâmetros</span>
+<span class="kw">def</span> <span class="fl">func</span>(a=<span class="num">1</span>, b):          <span class="cm"># SyntaxError</span>
+    <span class="kw">pass</span>
+
+<span class="cm"># ❌ Mutabilidade perigosa no default</span>
+<span class="kw">def</span> <span class="fl">adicionar</span>(lista=[]):   <span class="cm"># mesmo objeto reutilizado!</span>
+    lista.<span class="fl">append</span>(<span class="num">1</span>)
+    <span class="kw">return</span> lista
+
+<span class="cm"># ✅ Correto</span>
+<span class="kw">def</span> <span class="fl">adicionar</span>(lista=<span class="kw2">None</span>):
+    <span class="kw">if</span> lista <span class="kw2">is</span> <span class="kw2">None</span>:
+        lista = []
+    lista.<span class="fl">append</span>(<span class="num">1</span>)
+    <span class="kw">return</span> lista</code></pre>
+    </div>
+
+    <p><strong>🎯 Exemplo prático completo:</strong></p>
+    <div class="code-wrap">
+      <div class="code-label">pipeline funcional</div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">copiar</button><code><span class="kw">def</span> <span class="fl">filtrar_pares</span>(numeros: <span class="fl">list</span>) -> <span class="fl">list</span>:
+    <span class="st">"""Retorna apenas os números pares."""</span>
+    <span class="kw">return</span> [n <span class="kw">for</span> n <span class="kw2">in</span> numeros <span class="kw">if</span> n % <span class="num">2</span> == <span class="num">0</span>]
+
+<span class="kw">def</span> <span class="fl">somar_lista</span>(numeros: <span class="fl">list</span>) -> <span class="fl">int</span>:
+    <span class="st">"""Soma todos os elementos."""</span>
+    <span class="kw">return</span> <span class="fl">sum</span>(numeros)
+
+<span class="kw">def</span> <span class="fl">pipeline</span>(*funcs):
+    <span class="st">"""Aplica funções em sequência."""</span>
+    <span class="kw">def</span> <span class="fl">executar</span>(dados):
+        <span class="kw">for</span> func <span class="kw2">in</span> funcs:
+            dados = func(dados)
+        <span class="kw">return</span> dados
+    <span class="kw">return</span> executar
+
+processar = <span class="fl">pipeline</span>(filtrar_pares, somar_lista)
+
+lista = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]
+<span class="fl">print</span>(processar(lista))    <span class="cm"># 12  (2+4+6)</span></code></pre>
+    </div>
+
+    <p><strong>✔ Boas práticas:</strong></p>
+    <ul>
+      <li>Use nomes claros: <strong><code>calcular_total</code></strong>, <strong><code>buscar_usuario</code></strong></li>
+      <li>Funções devem fazer <strong>uma coisa só</strong></li>
+      <li>Prefira <code>return</code> ao invés de <code>print</code> dentro de funções</li>
+      <li>Documente com <strong>docstrings</strong> e use <strong>type hints</strong></li>
+      <li>Evite funções com mais de 20 linhas — quebre em menores</li>
+    </ul>
+
+    <div class="tip">
+      <span class="tip-icon">🚀</span>
+      <div><strong>Caminho recomendado:</strong> <code>def</code> básico → parâmetros e retorno → <code>*args</code>/<code>**kwargs</code> → escopo → lambda → closures → decorators</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div><span class="accent">python</span> · <span class="accent2">funções</span> &nbsp;·&nbsp; tutorial completo</div>
+    <div class="version"><span class="v-dot"></span> do básico ao avançado</div>
+  </footer>
+
+</div>
+<script>
+  function copyCode(btn) {
+    const pre  = btn.closest('pre');
+    const code = pre.querySelector('code');
+    navigator.clipboard.writeText((code.innerText || code.textContent).trim()).then(() => {
+      btn.textContent = 'copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
