@@ -55,7 +55,7 @@ cd tutoriais
 ```
 
 **2. GitHub Pages**
-Acesse online diretamente (se habilitado no repositório).
+Acesse online: **[devigorpaulo.github.io/tutoriais](https://devigorpaulo.github.io/tutoriais/)**
 
 ---
 
